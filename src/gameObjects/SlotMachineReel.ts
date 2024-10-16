@@ -22,7 +22,7 @@ export class SlotMachineReel extends GameObjects.Container {
     const joinedSymbols = symbols.concat(symbols.slice());
     this._addSymbols(joinedSymbols, scene);
 
-    this._addDebugBackground(scene);
+    // this._addDebugBackground(scene);
 
     scene.add.existing(this);
   }
