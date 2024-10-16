@@ -1,10 +1,12 @@
 import { GameObjects, Scene } from "phaser";
+import { SlotMachineZIndex } from "../scenes/Game";
 
 export class SlotMachineReel extends GameObjects.Container {
   static symbolWidth = 96;
   static reelWidth = 108;
   static reelHeight = 210;
   static reelBorder = 5;
+  static symbolHeight = 100;
 
   static symbolOffsetX =
     (SlotMachineReel.reelWidth - SlotMachineReel.symbolWidth) / 2; // Calculate the offset
@@ -14,15 +16,17 @@ export class SlotMachineReel extends GameObjects.Container {
 
     // Add three images in a vertical layout
     for (let i = 0; i < 3; i++) {
-      const symbol = scene.add.image(0, i * 100, symbols[i]);
+      const symbol = scene.add.image(
+        0,
+        i * SlotMachineReel.symbolHeight,
+        symbols[i]
+      );
+      symbol.setZ(SlotMachineZIndex.symbols);
       this.add(symbol);
     }
 
     this.setSize(SlotMachineReel.reelWidth, SlotMachineReel.reelHeight); // Set the size of the container
     this.setPosition(x, y); // Set the position of the container
-
-    // Add a background rectangle for debugging
-    this._addDebugBackground(scene); // Add background at the bottom of the container
 
     // Center align images inside the container
     this.list.forEach((child) => {

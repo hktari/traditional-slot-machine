@@ -2,9 +2,9 @@ import { Scene } from "phaser";
 import { SlotMachineReel } from "../gameObjects/SlotMachineReel";
 
 export enum SlotMachineZIndex {
-  background = 0,
-  symbols = 1,
-  reelOverlay = 1,
+  reelOverlay = 1000,
+  background = 200,
+  symbols = 300,
 }
 
 export class Game extends Scene {
@@ -18,7 +18,7 @@ export class Game extends Scene {
 
   private isSpinning: boolean = false;
 
-    private readonly SpinDurationMs = 1500;
+  private readonly SpinDurationMs = 1500;
 
   constructor() {
     super("Game");
@@ -71,17 +71,19 @@ export class Game extends Scene {
 
   create() {
     this.camera = this.cameras.main;
-    this.camera.setBackgroundColor(0x00ff00);
+    this.camera.setBackgroundColor(0xddf6f7);
 
     this.slotMachineBackground = this.add.image(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
       "slotMachineBackground"
     );
+    this.slotMachineBackground.setZ(SlotMachineZIndex.background);
+
 
     this.slotMachineReelsOverlay = this.add.image(
       this.cameras.main.centerX,
-      this.cameras.main.centerY,
+      this.cameras.main.centerY + 150,
       "reelBg"
     );
     this.slotMachineReelsOverlay.setZ(SlotMachineZIndex.reelOverlay);
@@ -114,6 +116,38 @@ export class Game extends Scene {
       this.isSpinning = false;
       this.updateLeverVisibility();
     }, this.SpinDurationMs);
+
+    const revolutionsCount = 50;
+
+    const singleRevolutionDurationMs = this.SpinDurationMs / revolutionsCount;
+
+    this.tweens.chain({
+      targets: this.slotMachineReelsOverlay,
+      tweens: [
+        {
+          y: this.cameras.main.centerY + SlotMachineReel.reelHeight,
+          duration: singleRevolutionDurationMs,
+          ease: "linear",
+        },
+        {
+          y: this.cameras.main.centerY,
+          duration: 0,
+          ease: "linear",
+        },
+      ],
+      repeat: revolutionsCount,
+    });
+
+    // this.tweens.add({
+    //     targets: this.slotMachineReelsOverlay,
+    //     y: SlotMachineReel.reelHeight,
+    //     duration: this.SpinDurationMs,
+    //     ease: 'Cubic.easeInOut',
+    //     repeat: -1,
+    //     onComplete: () => {
+    //         this.slotMachineReelsOverlay.angle = 0;
+    //     }
+    // });
   }
   private updateLeverVisibility() {
     this.slotMachineLeverUp.setVisible(!this.isSpinning);
