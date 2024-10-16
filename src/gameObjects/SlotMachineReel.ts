@@ -12,21 +12,23 @@ export class SlotMachineReel extends GameObjects.Container {
   constructor(scene: Scene, x: number, y: number, symbols: string[]) {
     super(scene, x, y);
 
-    // Add three images in a vertical layout
-    for (let i = 0; i < 3; i++) {
+    this._addSymbolsTwice(symbols, scene);
+
+
+    this._addDebugBackground(scene);
+
+    scene.add.existing(this);
+  }
+
+  private _addSymbolsTwice(symbols: string[], scene: Scene) {
+    for (let i = 0; i < symbols.length * 2; i++) {
       const symbol = scene.add.image(
         0,
         i * SlotMachineReel.symbolHeight,
-        symbols[i]
+        symbols[i % symbols.length]
       );
-      symbol.setZ(SlotMachineZIndex.symbols);
       this.add(symbol);
     }
-
-    // this._centerAlignChildren();
-    this._addDebugBackground(scene);
-    // Add this container to the scene
-    scene.add.existing(this);
   }
 
   private _addDebugBackground(scene: Scene) {

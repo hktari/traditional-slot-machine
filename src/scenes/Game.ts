@@ -26,15 +26,6 @@ export class Game extends Scene {
 
   _createReels() {
     this.slotMachineReels = [];
-    const reelWidth = 100;
-    const reelOffsetX = 5;
-    const reelOffsetY = -60;
-    const reelSpacing = reelWidth;
-    const reelHorizontalSpacing = 15;
-
-    const leftReelX = this.cameras.main.centerX + reelOffsetX;
-    const leftReelY = this.cameras.main.centerY + reelOffsetY;
-
     const reelSymbols = [
       "slotSymbol1",
       "slotSymbol2",
@@ -42,6 +33,16 @@ export class Game extends Scene {
       "slotSymbol4",
       "slotSymbol5",
     ];
+
+    const reelWidth = 100;
+    const reelOffsetX = 5;
+    const reelOffsetY = -1 * reelSymbols.length * 96 / 2;
+    const reelSpacing = reelWidth;
+    const reelHorizontalSpacing = 15;
+
+    const leftReelX = this.cameras.main.centerX + reelOffsetX;
+    const leftReelY = this.cameras.main.centerY + reelOffsetY;
+
     for (let i = 0; i < 1; i++) {
       const reel = new SlotMachineReel(this, leftReelX, leftReelY, reelSymbols);
       this.slotMachineReels.push(reel);
@@ -76,18 +77,12 @@ export class Game extends Scene {
       "reelBg"
     );
 
-    this.slotMachine = this.add.image(
-      this.cameras.main.centerX,
-      this.cameras.main.centerY,
-      "slotMachineBackground"
-    );
-
     this.slotMachineLeverUp = this.add.image(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
       "leverUp"
     );
-    // Add click handler to leverUp image
+
     this.slotMachineLeverUp.setInteractive();
     this.slotMachineLeverUp.on("pointerdown", this.spin, this);
 
@@ -97,8 +92,15 @@ export class Game extends Scene {
       "leverDown"
     );
 
+
+    this.slotMachine = this.add.image(
+        this.cameras.main.centerX,
+        this.cameras.main.centerY,
+        "slotMachineBackground"
+      );
     this._createReels();
     this.updateLeverVisibility();
+
 
     this._drawDebugCenter();
   }
@@ -131,7 +133,7 @@ export class Game extends Scene {
       this.updateLeverVisibility();
     }, this.SpinDurationMs);
 
-    const revolutionsCount = 50;
+    const revolutionsCount = 5;
 
     const singleRevolutionDurationMs = this.SpinDurationMs / revolutionsCount;
 
@@ -151,6 +153,23 @@ export class Game extends Scene {
       ],
       repeat: revolutionsCount,
     });
+
+    this.tweens.chain({
+        targets: this.slotMachineReels,
+        tweens: [
+          {
+            y: this.cameras.main.centerY - SlotMachineReel.reelHeight,
+            duration: singleRevolutionDurationMs,
+            ease: "linear",
+          },
+          {
+            y: this.cameras.main.centerY,
+            duration: 0,
+            ease: "linear",
+          },
+        ],
+        repeat: revolutionsCount,
+      });
 
     // this.tweens.add({
     //     targets: this.slotMachineReelsOverlay,
