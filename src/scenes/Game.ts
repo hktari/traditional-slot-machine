@@ -28,31 +28,6 @@ export class Game extends Scene {
     super("Game");
   }
 
-  _createReels() {
-    this.slotMachineReels = [];
-    const reelSymbols = [
-      "slotSymbol1",
-      "slotSymbol2",
-      "slotSymbol3",
-      "slotSymbol4",
-      "slotSymbol5",
-    ];
-
-    const reelWidth = 100;
-    const reelOffsetX = 5;
-    const reelOffsetY = (-1 * reelSymbols.length * 96) / 2;
-    const reelSpacing = reelWidth;
-    const reelHorizontalSpacing = 15;
-
-    const leftReelX = this.cameras.main.centerX + reelOffsetX;
-    const leftReelY = this.cameras.main.centerY + 0;
-
-    for (let i = 0; i < 1; i++) {
-      const reel = new SlotMachineReel(this, leftReelX, leftReelY, reelSymbols);
-      this.slotMachineReels.push(reel);
-    }
-  }
-
   preload() {
     this.load.image("leverUp", "assets/Slot Machine/lever-up.png");
     this.load.image("leverDown", "assets/Slot Machine/lever-down.png");
@@ -97,6 +72,36 @@ export class Game extends Scene {
     this.updateLeverVisibility();
 
     this._drawDebugCenter();
+  }
+
+  _createReels() {
+    this.slotMachineReels = [];
+    const reelSymbols = [
+      "slotSymbol1",
+      "slotSymbol2",
+      "slotSymbol3",
+      "slotSymbol4",
+      "slotSymbol5",
+    ];
+
+    const offsetXToCenter = 5;
+    const distanceBetweennReels = 130;
+    const offsetYToCenter = 35;
+
+    const reelOffsetX = distanceBetweennReels * -1 + offsetXToCenter;
+
+    const leftReelX = this.cameras.main.centerX + reelOffsetX;
+    const leftReelY = this.cameras.main.centerY + offsetYToCenter;
+
+    for (let i = 0; i < 3; i++) {
+      const reel = new SlotMachineReel(
+        this,
+        leftReelX + i * distanceBetweennReels,
+        leftReelY,
+        reelSymbols
+      );
+      this.slotMachineReels.push(reel);
+    }
   }
 
   private _createLever() {

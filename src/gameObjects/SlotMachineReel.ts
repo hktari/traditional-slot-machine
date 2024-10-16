@@ -12,7 +12,7 @@ export class SlotMachineReel extends GameObjects.Container {
   //   TODO: check if correct
   static symbolHeight = 100;
 
-  static verticalSpacing = 50;
+  static verticalSpacing = 60;
 
   private initialY = 0;
   constructor(scene: Scene, x: number, y: number, symbols: string[]) {
@@ -22,7 +22,7 @@ export class SlotMachineReel extends GameObjects.Container {
     const joinedSymbols = symbols.concat(symbols.slice());
     this._addSymbols(joinedSymbols, scene);
 
-    // this._addDebugBackground(scene);
+    this._addDebugBackground(scene);
 
     scene.add.existing(this);
   }
@@ -61,7 +61,8 @@ export class SlotMachineReel extends GameObjects.Container {
     let y = 0;
     const symbolsCount = symbols.length;
     for (let i = 0; i < symbolsCount; i++) {
-      y = i * (SlotMachineReel.symbolHeight + SlotMachineReel.verticalSpacing);
+      const spacing = i === 0 ? 0 : SlotMachineReel.verticalSpacing;
+      y = i * (SlotMachineReel.symbolHeight + spacing);
       const symbol = scene.add.image(0, y, symbols[i]);
       this.add(symbol);
     }
