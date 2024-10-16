@@ -31,7 +31,11 @@ export class Game extends Scene {
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0x00ff00);
 
-    this.slotMachineBackground = this.add.image(0, 0, "slotMachineBackground");
+    this.slotMachineBackground = this.add.image(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      "slotMachineBackground"
+    );
     this.slotMachineSymbols = [
       this.add.image(0, 0, "slotSymbol1"),
       this.add.image(0, 0, "slotSymbol2"),
@@ -40,8 +44,16 @@ export class Game extends Scene {
       this.add.image(0, 0, "slotSymbol5"),
     ];
 
-    this.slotMachineLeverUp = this.add.image(0, 0, "leverUp");
-    this.slotMachineLeverDown = this.add.image(0, 0, "leverDown");
+    this.slotMachineLeverUp = this.add.image(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      "leverUp"
+    );
+    this.slotMachineLeverDown = this.add.image(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      "leverDown"
+    );
 
     this.input.once("pointerdown", () => {
       this.scene.start("GameOver");
