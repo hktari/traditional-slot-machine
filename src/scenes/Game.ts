@@ -2,18 +2,18 @@ import { Scene } from "phaser";
 import { SlotMachineReel } from "../gameObjects/SlotMachineReel";
 
 export enum SlotMachineZIndex {
-  reelOverlay = 1000,
-  background = 200,
+  reelsBackground = 1000,
+  slotMachine = 200,
   symbols = 300,
 }
 
 export class Game extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
-  slotMachineBackground: Phaser.GameObjects.Image;
+  slotMachine: Phaser.GameObjects.Image;
   slotMachineSymbols: Phaser.GameObjects.Image[];
   slotMachineLeverUp: Phaser.GameObjects.Image;
   slotMachineLeverDown: Phaser.GameObjects.Image;
-  slotMachineReelsOverlay: Phaser.GameObjects.Image;
+  slotMachineReelsBackground: Phaser.GameObjects.Image;
   slotMachineReels: SlotMachineReel[];
 
   private isSpinning: boolean = false;
@@ -27,12 +27,12 @@ export class Game extends Scene {
   _createReels() {
     this.slotMachineReels = [];
     const reelWidth = 100;
-    const reelOffsetX = 0;
+    const reelOffsetX = 5;
     const reelOffsetY = -60;
     const reelSpacing = reelWidth;
     const reelHorizontalSpacing = 15;
 
-    const leftReelX = this.cameras.main.centerX;
+    const leftReelX = this.cameras.main.centerX + reelOffsetX;
     const leftReelY = this.cameras.main.centerY + reelOffsetY;
 
     const reelSymbols = [
@@ -43,12 +43,7 @@ export class Game extends Scene {
       "slotSymbol5",
     ];
     for (let i = 0; i < 1; i++) {
-      const reel = new SlotMachineReel(
-        this,
-        leftReelX + i * reelSpacing,
-        leftReelY,
-        reelSymbols
-      );
+      const reel = new SlotMachineReel(this, leftReelX, leftReelY, reelSymbols);
       this.slotMachineReels.push(reel);
     }
   }
@@ -73,20 +68,19 @@ export class Game extends Scene {
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0xddf6f7);
 
-    this.slotMachineBackground = this.add.image(
-      this.cameras.main.centerX,
-      this.cameras.main.centerY,
-      "slotMachineBackground"
-    );
-    this.slotMachineBackground.setZ(SlotMachineZIndex.background);
-
-
-    this.slotMachineReelsOverlay = this.add.image(
+    // TODO: move to container
+    // TODO: add symbols to container in 3x3 grid
+    this.slotMachineReelsBackground = this.add.image(
       this.cameras.main.centerX,
       this.cameras.main.centerY + 150,
       "reelBg"
     );
-    this.slotMachineReelsOverlay.setZ(SlotMachineZIndex.reelOverlay);
+
+    this.slotMachine = this.add.image(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      "slotMachineBackground"
+    );
 
     this.slotMachineLeverUp = this.add.image(
       this.cameras.main.centerX,
@@ -105,6 +99,26 @@ export class Game extends Scene {
 
     this._createReels();
     this.updateLeverVisibility();
+
+    this._drawDebugCenter();
+  }
+
+  private _drawDebugCenter() {
+    this.add.rectangle(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      10,
+      10,
+      0x00ff00,
+      0.5
+    );
+    this.add.circle(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      2,
+      0xff0000,
+      0.5
+    );
   }
 
   spin() {
@@ -122,7 +136,7 @@ export class Game extends Scene {
     const singleRevolutionDurationMs = this.SpinDurationMs / revolutionsCount;
 
     this.tweens.chain({
-      targets: this.slotMachineReelsOverlay,
+      targets: this.slotMachineReelsBackground,
       tweens: [
         {
           y: this.cameras.main.centerY + SlotMachineReel.reelHeight,

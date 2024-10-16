@@ -6,10 +6,8 @@ export class SlotMachineReel extends GameObjects.Container {
   static reelWidth = 108;
   static reelHeight = 210;
   static reelBorder = 5;
+  //   TODO: check if correct
   static symbolHeight = 100;
-
-  static symbolOffsetX =
-    (SlotMachineReel.reelWidth - SlotMachineReel.symbolWidth) / 2; // Calculate the offset
 
   constructor(scene: Scene, x: number, y: number, symbols: string[]) {
     super(scene, x, y);
@@ -25,16 +23,8 @@ export class SlotMachineReel extends GameObjects.Container {
       this.add(symbol);
     }
 
-    this.setSize(SlotMachineReel.reelWidth, SlotMachineReel.reelHeight); // Set the size of the container
-    this.setPosition(x, y); // Set the position of the container
-
-    // Center align images inside the container
-    this.list.forEach((child) => {
-      if (child instanceof GameObjects.Image) {
-        child.x = SlotMachineReel.symbolOffsetX;
-      }
-    });
-
+    // this._centerAlignChildren();
+    this._addDebugBackground(scene);
     // Add this container to the scene
     scene.add.existing(this);
   }
@@ -43,12 +33,8 @@ export class SlotMachineReel extends GameObjects.Container {
     const debugBackground = scene.add.graphics();
     debugBackground.fillStyle(0x0000ff, 0.5); // Blue with 50% opacity
 
-    debugBackground.fillRect(
-      -SlotMachineReel.reelWidth / 2,
-      -SlotMachineReel.reelBorder,
-      SlotMachineReel.reelWidth + SlotMachineReel.reelBorder * 2,
-      SlotMachineReel.reelHeight + SlotMachineReel.reelBorder * 2
-    );
-    this.addAt(debugBackground, 0);
+    const bounds = this.getBounds();
+    debugBackground.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    scene.children.addAt(debugBackground, 0);
   }
 }
