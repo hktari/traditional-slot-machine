@@ -1,5 +1,8 @@
 import { GameObjects, Scene } from "phaser";
-import { SlotMachineZIndex } from "../scenes/Game";
+import {
+  SlotMachineReelAnimationPreferences,
+  SlotMachineZIndex,
+} from "../scenes/Game";
 
 export class SlotMachineReel extends GameObjects.Container {
   static symbolWidth = 96;
@@ -9,24 +12,57 @@ export class SlotMachineReel extends GameObjects.Container {
   //   TODO: check if correct
   static symbolHeight = 100;
 
+  static verticalSpacing = 50;
+
+  private initialY = 0;
   constructor(scene: Scene, x: number, y: number, symbols: string[]) {
     super(scene, x, y);
+    this.initialY = y;
 
-    this._addSymbolsTwice(symbols, scene);
-
+    const joinedSymbols = symbols.concat(symbols.slice());
+    this._addSymbols(joinedSymbols, scene);
 
     this._addDebugBackground(scene);
 
     scene.add.existing(this);
   }
 
-  private _addSymbolsTwice(symbols: string[], scene: Scene) {
-    for (let i = 0; i < symbols.length * 2; i++) {
-      const symbol = scene.add.image(
-        0,
-        i * SlotMachineReel.symbolHeight,
-        symbols[i % symbols.length]
-      );
+  spin({
+    singleRevolutionDurationMs,
+    revolutionsCount,
+  }: SlotMachineReelAnimationPreferences) {
+    const { height } = this.getBounds();
+
+    const targetY =
+      this.initialY -
+      height / 2 -
+      SlotMachineReel.symbolHeight / 2 +
+      SlotMachineReel.verticalSpacing / 2;
+
+    this.scene.tweens.chain({
+      targets: this,
+      tweens: [
+        {
+          y: targetY,
+          duration: singleRevolutionDurationMs,
+          ease: "linear",
+        },
+        {
+          y: this.initialY,
+          duration: 0,
+          ease: "linear",
+        },
+      ],
+      repeat: revolutionsCount,
+    });
+  }
+
+  private _addSymbols(symbols: string[], scene: Scene) {
+    let y = 0;
+    const symbolsCount = symbols.length;
+    for (let i = 0; i < symbolsCount; i++) {
+      y = i * (SlotMachineReel.symbolHeight + SlotMachineReel.verticalSpacing);
+      const symbol = scene.add.image(0, y, symbols[i]);
       this.add(symbol);
     }
   }
