@@ -18,7 +18,7 @@ export default class SlotMachineReelBackground extends Phaser.GameObjects
 
     const { height } = this.getBounds();
 
-    this.scene.tweens.chain({
+    return this.scene.tweens.chain({
       targets: this,
       tweens: [
         {

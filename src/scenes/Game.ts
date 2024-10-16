@@ -56,12 +56,6 @@ export class Game extends Scene {
       this.cameras.main.centerY
     );
 
-    this.slotMachineLeverUp = this.add.image(
-      this.cameras.main.centerX,
-      this.cameras.main.centerY,
-      "leverUp"
-    );
-
     this._createReels();
     this.slotMachine = this.add.image(
       this.cameras.main.centerX,
@@ -105,6 +99,11 @@ export class Game extends Scene {
   }
 
   private _createLever() {
+    this.slotMachineLeverUp = this.add.image(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      "leverUp"
+    );
     this.slotMachineLeverUp.setInteractive();
     this.slotMachineLeverUp.on("pointerdown", this.spin, this);
 
@@ -140,31 +139,21 @@ export class Game extends Scene {
     const SpinDurationMs = 3000;
     const revolutionsCount = 30;
 
-    setTimeout(() => {
-      this.isSpinning = false;
-      this.updateLeverVisibility();
-    }, SpinDurationMs);
-
     const singleRevolutionDurationMs = SpinDurationMs / revolutionsCount;
 
     const animationPreferences = {
       singleRevolutionDurationMs,
       revolutionsCount,
     };
-    this.slotMachineReelsBackground.spin(animationPreferences);
-    this.slotMachineReels.forEach((reel) => reel.spin(animationPreferences));
+    const tween = this.slotMachineReelsBackground.spin(animationPreferences);
 
-    // this.tweens.add({
-    //     targets: this.slotMachineReelsOverlay,
-    //     y: SlotMachineReel.reelHeight,
-    //     duration: this.SpinDurationMs,
-    //     ease: 'Cubic.easeInOut',
-    //     repeat: -1,
-    //     onComplete: () => {
-    //         this.slotMachineReelsOverlay.angle = 0;
-    //     }
-    // });
+    tween.on("complete", () => {
+      this.isSpinning = false;
+      this.updateLeverVisibility();
+    });
+    this.slotMachineReels.forEach((reel) => reel.spin(animationPreferences));
   }
+  
   private updateLeverVisibility() {
     this.slotMachineLeverUp.setVisible(!this.isSpinning);
     this.slotMachineLeverDown.setVisible(this.isSpinning);
