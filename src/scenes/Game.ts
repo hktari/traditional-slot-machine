@@ -1,5 +1,6 @@
 import { Scene } from "phaser";
 import { SlotMachineReel } from "../gameObjects/SlotMachineReel";
+import SlotMachineReelBackground from "../gameObjects/SlotMachineReelBackground";
 
 export enum SlotMachineZIndex {
   reelsBackground = 1000,
@@ -18,8 +19,8 @@ export class Game extends Scene {
   slotMachineSymbols: Phaser.GameObjects.Image[];
   slotMachineLeverUp: Phaser.GameObjects.Image;
   slotMachineLeverDown: Phaser.GameObjects.Image;
-  slotMachineReelsBackground: Phaser.GameObjects.Image;
   slotMachineReels: SlotMachineReel[];
+  slotMachineReelsBackground: SlotMachineReelBackground;
 
   private isSpinning: boolean = false;
 
@@ -74,10 +75,10 @@ export class Game extends Scene {
 
     // TODO: move to container
     // TODO: add symbols to container in 3x3 grid
-    this.slotMachineReelsBackground = this.add.image(
+    this.slotMachineReelsBackground = new SlotMachineReelBackground(
+      this,
       this.cameras.main.centerX,
-      this.cameras.main.centerY + 150,
-      "reelBg"
+      this.cameras.main.centerY
     );
 
     this.slotMachineLeverUp = this.add.image(
@@ -86,6 +87,19 @@ export class Game extends Scene {
       "leverUp"
     );
 
+    this._createReels();
+    this.slotMachine = this.add.image(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      "slotMachineBackground"
+    );
+    this._createLever();
+    this.updateLeverVisibility();
+
+    this._drawDebugCenter();
+  }
+
+  private _createLever() {
     this.slotMachineLeverUp.setInteractive();
     this.slotMachineLeverUp.on("pointerdown", this.spin, this);
 
@@ -94,18 +108,7 @@ export class Game extends Scene {
       this.cameras.main.centerY,
       "leverDown"
     );
-
-    this.slotMachine = this.add.image(
-      this.cameras.main.centerX,
-      this.cameras.main.centerY,
-      "slotMachineBackground"
-    );
-    this._createReels();
-    this.updateLeverVisibility();
-
-    this._drawDebugCenter();
   }
-
   private _drawDebugCenter() {
     this.add.rectangle(
       this.cameras.main.centerX,
@@ -137,30 +140,13 @@ export class Game extends Scene {
       this.updateLeverVisibility();
     }, SpinDurationMs);
 
-
     const singleRevolutionDurationMs = SpinDurationMs / revolutionsCount;
-
-    this.tweens.chain({
-      targets: this.slotMachineReelsBackground,
-      tweens: [
-        {
-          y: this.cameras.main.centerY + SlotMachineReel.reelHeight,
-          duration: singleRevolutionDurationMs,
-          ease: "linear",
-        },
-        {
-          y: this.cameras.main.centerY,
-          duration: 0,
-          ease: "linear",
-        },
-      ],
-      repeat: revolutionsCount,
-    });
 
     const animationPreferences = {
       singleRevolutionDurationMs,
       revolutionsCount,
     };
+    this.slotMachineReelsBackground.spin(animationPreferences);
     this.slotMachineReels.forEach((reel) => reel.spin(animationPreferences));
 
     // this.tweens.add({
