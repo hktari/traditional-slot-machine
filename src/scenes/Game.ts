@@ -6,6 +6,7 @@ export class Game extends Scene {
   slotMachineSymbols: Phaser.GameObjects.Image[];
   slotMachineLeverUp: Phaser.GameObjects.Image;
   slotMachineLeverDown: Phaser.GameObjects.Image;
+  slotMachineReelsBackground: Phaser.GameObjects.Image;
 
   constructor() {
     super("Game");
@@ -44,6 +45,11 @@ export class Game extends Scene {
       this.add.image(0, 0, "slotSymbol5"),
     ];
 
+    this.slotMachineReelsBackground = this.add.image(
+      this.cameras.main.centerX,
+      this.cameras.main.centerY,
+      "reelBg"
+    );
     this.slotMachineLeverUp = this.add.image(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
