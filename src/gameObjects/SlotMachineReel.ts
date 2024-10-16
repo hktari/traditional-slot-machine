@@ -19,12 +19,16 @@ export class SlotMachineReel extends GameObjects.Container {
     super(scene, x, y);
     this.initialY = y;
 
-    const joinedSymbols = symbols.concat(symbols.slice());
-    this._addSymbols(joinedSymbols, scene);
+    this._addSymbols(this._duplicateAndShuffle(symbols), scene);
 
     this._addDebugBackground(scene);
 
     scene.add.existing(this);
+  }
+
+  _duplicateAndShuffle(symbols: string[]) {
+    const duplicatedSymbols = [...symbols, ...symbols];
+    return duplicatedSymbols.sort(() => Math.random() - 0.5);
   }
 
   spin({
