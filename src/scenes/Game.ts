@@ -1,4 +1,11 @@
 import { Scene } from "phaser";
+import { SlotMachineReel } from "../gameObjects/SlotMachineReel";
+
+export enum SlotMachineZIndex {
+  background = 0,
+  symbols = 1,
+  reelOverlay = 1,
+}
 
 export class Game extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
@@ -6,10 +13,44 @@ export class Game extends Scene {
   slotMachineSymbols: Phaser.GameObjects.Image[];
   slotMachineLeverUp: Phaser.GameObjects.Image;
   slotMachineLeverDown: Phaser.GameObjects.Image;
-  slotMachineReelsBackground: Phaser.GameObjects.Image;
+  slotMachineReelsOverlay: Phaser.GameObjects.Image;
+  slotMachineReels: SlotMachineReel[];
+
+  private isSpinning: boolean = false;
+
+    private readonly SpinDurationMs = 1500;
 
   constructor() {
     super("Game");
+  }
+
+  _createReels() {
+    this.slotMachineReels = [];
+    const reelWidth = 100;
+    const reelOffsetX = 0;
+    const reelOffsetY = -60;
+    const reelSpacing = reelWidth;
+    const reelHorizontalSpacing = 15;
+
+    const leftReelX = this.cameras.main.centerX;
+    const leftReelY = this.cameras.main.centerY + reelOffsetY;
+
+    const reelSymbols = [
+      "slotSymbol1",
+      "slotSymbol2",
+      "slotSymbol3",
+      "slotSymbol4",
+      "slotSymbol5",
+    ];
+    for (let i = 0; i < 1; i++) {
+      const reel = new SlotMachineReel(
+        this,
+        leftReelX + i * reelSpacing,
+        leftReelY,
+        reelSymbols
+      );
+      this.slotMachineReels.push(reel);
+    }
   }
 
   preload() {
@@ -37,32 +78,45 @@ export class Game extends Scene {
       this.cameras.main.centerY,
       "slotMachineBackground"
     );
-    this.slotMachineSymbols = [
-      this.add.image(0, 0, "slotSymbol1"),
-      this.add.image(0, 0, "slotSymbol2"),
-      this.add.image(0, 0, "slotSymbol3"),
-      this.add.image(0, 0, "slotSymbol4"),
-      this.add.image(0, 0, "slotSymbol5"),
-    ];
 
-    this.slotMachineReelsBackground = this.add.image(
+    this.slotMachineReelsOverlay = this.add.image(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
       "reelBg"
     );
+    this.slotMachineReelsOverlay.setZ(SlotMachineZIndex.reelOverlay);
+
     this.slotMachineLeverUp = this.add.image(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
       "leverUp"
     );
+    // Add click handler to leverUp image
+    this.slotMachineLeverUp.setInteractive();
+    this.slotMachineLeverUp.on("pointerdown", this.spin, this);
+
     this.slotMachineLeverDown = this.add.image(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
       "leverDown"
     );
 
-    this.input.once("pointerdown", () => {
-      this.scene.start("GameOver");
-    });
+    this._createReels();
+    this.updateLeverVisibility();
+  }
+
+  spin() {
+    console.log("Spin the reels!");
+    // Add logic to spin the reels
+    this.isSpinning = true;
+    this.updateLeverVisibility();
+    setTimeout(() => {
+      this.isSpinning = false;
+      this.updateLeverVisibility();
+    }, this.SpinDurationMs);
+  }
+  private updateLeverVisibility() {
+    this.slotMachineLeverUp.setVisible(!this.isSpinning);
+    this.slotMachineLeverDown.setVisible(this.isSpinning);
   }
 }
