@@ -29,15 +29,10 @@ export class SlotMachineReel extends GameObjects.Container {
     super(scene, x, y);
     this.initialY = y;
     const shuffledSymbols = this._duplicateAndShuffle(symbols);
-    this._addSymbols(shuffledSymbols, scene);
-
-    this.spinResult = scene.add.image(
-      0,
-      y - SlotMachineReel.symbolHeight / 2,
-      shuffledSymbols[0]
-    );
+    this._addSymbolStrips(scene, 3, shuffledSymbols);
+    
+    this.spinResult = scene.add.image(0, 0, shuffledSymbols[0]);
     this.add(this.spinResult);
-    this.spinResult.setVisible(false);
 
     this._updateSymbolsVisibility();
 
@@ -49,9 +44,9 @@ export class SlotMachineReel extends GameObjects.Container {
   private _updateSymbolsVisibility() {
     this.list.forEach((child) => {
       const symbolImage = child as GameObjects.Image;
-      symbolImage.setVisible(this.isSpinning);
+      symbolImage.setVisible(true);
     });
-    this.spinResult.setVisible(!this.isSpinning);
+    this.spinResult.setVisible(false);
   }
 
   _duplicateAndShuffle(symbols: string[]) {
@@ -64,28 +59,25 @@ export class SlotMachineReel extends GameObjects.Container {
 
     const targetY =
       this.initialY -
-      height / 2 -
-      SlotMachineReel.symbolHeight / 2 +
+      height -
+      SlotMachineReel.symbolHeight +
       SlotMachineReel.verticalSpacing / 2;
 
     const { singleRevolutionDurationMs, revolutionsCount } =
       this.animationPreferences;
 
-    return this.scene.tweens.chain({
+    return this.scene.tweens.add({
       targets: this,
-      tweens: [
-        {
-          y: targetY,
-          duration: singleRevolutionDurationMs,
-          ease: "linear",
-        },
-        {
-          y: this.initialY,
-          duration: 0,
-          ease: "linear",
-        },
-      ],
-      repeat: revolutionsCount,
+      y: targetY,
+      duration: singleRevolutionDurationMs,
+      ease: "Cubic.inOut",
+      repeat: 0,
+      onUpdate: () => {
+        console.log("onUpdate", this.y, targetY);
+        if (this.y - 100 >= targetY) {
+          this.y = this.initialY;
+        }
+      },
     });
   }
 
@@ -96,6 +88,9 @@ export class SlotMachineReel extends GameObjects.Container {
     }
 
     return new Promise((resolve) => {
+      this.isSpinning = true;
+      this._updateSymbolsVisibility();
+
       this._playSpinAnimation().on("complete", () => {
         if (!resultSymbol) {
           // TODO: extract into utility file
@@ -110,14 +105,39 @@ export class SlotMachineReel extends GameObjects.Container {
     });
   }
 
-  private _addSymbols(symbols: string[], scene: Scene) {
+  private symbolStrips: GameObjects.Container[];
+
+  private _addSymbolStrips(
+    scene: Scene,
+    stripCount: number,
+    symbols: string[]
+  ) {
+    const symbolStrips = [];
+
+    const spacing = SlotMachineReel.verticalSpacing;
+
+    for (let i = 0, curY = 0; i < stripCount; i++) {
+      const symbolStrip = new GameObjects.Container(scene, 0, curY);
+      this._addSymbols(symbolStrip, symbols, scene);
+      const { bottom } = symbolStrip.getBounds();
+      curY = bottom + spacing;
+      symbolStrips.push(symbolStrip);
+    }
+    this.add(symbolStrips);
+  }
+
+  private _addSymbols(
+    container: GameObjects.Container,
+    symbols: string[],
+    scene: Scene
+  ) {
     let y = 0;
     const symbolsCount = symbols.length;
     for (let i = 0; i < symbolsCount; i++) {
       const spacing = i === 0 ? 0 : SlotMachineReel.verticalSpacing;
       y = i * (SlotMachineReel.symbolHeight + spacing);
       const symbol = scene.add.image(0, y, symbols[i]);
-      this.add(symbol);
+      container.add(symbol);
     }
   }
 
