@@ -22,7 +22,16 @@ export class Game extends Scene {
   slotMachineReels: SlotMachineReel[];
   slotMachineReelsBackground: SlotMachineReelBackground;
 
-  private isSpinning: boolean = false;
+  get isSpinning(): boolean {
+    return this._isSpinning;
+  }
+
+  set isSpinning(value: boolean) {
+    this._isSpinning = value;
+    this._updateLeverVisibility();
+  }
+
+  private _isSpinning: boolean = false;
 
   constructor() {
     super("Game");
@@ -63,7 +72,8 @@ export class Game extends Scene {
       "slotMachineBackground"
     );
     this._createLever();
-    this.updateLeverVisibility();
+
+    this._updateLeverVisibility();
 
     this._drawDebugCenter();
   }
@@ -133,8 +143,8 @@ export class Game extends Scene {
 
   spin() {
     console.log("Spin the reels!");
+
     this.isSpinning = true;
-    this.updateLeverVisibility();
 
     const SpinDurationMs = 3000;
     const revolutionsCount = 30;
@@ -149,12 +159,13 @@ export class Game extends Scene {
 
     tween.on("complete", () => {
       this.isSpinning = false;
-      this.updateLeverVisibility();
+      // TODO: display result
+      // TODO: hide slotMachineReels
     });
     this.slotMachineReels.forEach((reel) => reel.spin(animationPreferences));
   }
-  
-  private updateLeverVisibility() {
+
+  private _updateLeverVisibility() {
     this.slotMachineLeverUp.setVisible(!this.isSpinning);
     this.slotMachineLeverDown.setVisible(this.isSpinning);
   }
