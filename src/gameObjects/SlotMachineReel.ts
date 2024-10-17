@@ -16,16 +16,7 @@ export class SlotMachineReel extends GameObjects.Container {
 
   private initialY = 0;
 
-  private _isSpinning: boolean = false;
-  get isSpinning(): boolean {
-    return this._isSpinning;
-  }
-
-  set isSpinning(isSpinning: boolean) {
-    this._isSpinning = isSpinning;
-
-    this._updateSymbolsVisibility();
-  }
+  private isSpinning: boolean = false;
 
   private spinResult: Phaser.GameObjects.Image;
   constructor(
@@ -68,10 +59,7 @@ export class SlotMachineReel extends GameObjects.Container {
     return duplicatedSymbols.sort(() => Math.random() - 0.5);
   }
 
-  playSpinAnimation({
-    singleRevolutionDurationMs,
-    revolutionsCount,
-  }: SlotMachineReelAnimationPreferences) {
+  private _playSpinAnimation() {
     const { height } = this.getBounds();
 
     const targetY =
@@ -79,6 +67,9 @@ export class SlotMachineReel extends GameObjects.Container {
       height / 2 -
       SlotMachineReel.symbolHeight / 2 +
       SlotMachineReel.verticalSpacing / 2;
+
+    const { singleRevolutionDurationMs, revolutionsCount } =
+      this.animationPreferences;
 
     return this.scene.tweens.chain({
       targets: this,
@@ -105,20 +96,18 @@ export class SlotMachineReel extends GameObjects.Container {
     }
 
     return new Promise((resolve) => {
-      this.playSpinAnimation(this.animationPreferences).on("complete", () => {
+      this._playSpinAnimation().on("complete", () => {
         if (!resultSymbol) {
           // TODO: extract into utility file
           resultSymbol = Phaser.Utils.Array.GetRandom(this.symbols);
         }
-        this.showSpinResult(resultSymbol);
+
+        this.spinResult.setTexture(resultSymbol);
+        this.isSpinning = false;
+        this._updateSymbolsVisibility();
         resolve(resultSymbol);
       });
     });
-  }
-
-  showSpinResult(symbol: string) {
-    this.spinResult.setTexture(symbol);
-    this.spinResult.setVisible(true);
   }
 
   private _addSymbols(symbols: string[], scene: Scene) {
