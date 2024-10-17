@@ -33,7 +33,7 @@ export class GameOver extends Scene {
     "slotSymbol4",
   ];
 
-  private spacing = 0;
+  private spacing = 50;
   create() {
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0xaabb00);
@@ -74,7 +74,7 @@ export class GameOver extends Scene {
       this.startLine.y
     );
 
-    this.alignContainers();
+    this.placeContainerBehindOther(this.container2);
 
     const speed = 3;
 
@@ -94,15 +94,8 @@ export class GameOver extends Scene {
   private debugGraphics: Phaser.GameObjects.Graphics[] = [];
 
   alignContainers() {
-    const rightMostContainer = this.getRightMostContainer();
     const leftMostContainer = this.getLeftMostContainer();
-
-    leftMostContainer.setX(
-      rightMostContainer.getBounds().left -
-        leftMostContainer.getBounds().width +
-        this.symbolWidth / 2 -
-        this.spacing
-    );
+    this.placeContainerBehindOther(leftMostContainer);
   }
   redrawDebugGraphics() {
     this.children.remove(this.debugGraphics);
@@ -126,7 +119,7 @@ export class GameOver extends Scene {
     const container = this.add.container(x, y);
     for (let i = 0; i < this.symbols.length; i++) {
       const symbolImage = this.add.image(
-        i * this.symbolWidth + this.spacing,
+        i * (this.symbolWidth + this.spacing),
         0,
         this.symbols[i]
       );
@@ -187,12 +180,24 @@ export class GameOver extends Scene {
           });
         }
 
-        const otherContainer = this.getLeftMostContainer();
-        container.setX(
-          otherContainer.x - container.getBounds().width - this.spacing
-        );
+        this.placeContainerBehindOther(container);
+
         this.animateXToFinishLine(container, speed);
       },
     });
+  }
+  placeContainerBehindOther(container: Phaser.GameObjects.Container) {
+    const leftMostContainer =
+      this.container1 === container ? this.container2 : this.container1;
+    container.setX(
+      leftMostContainer.x - container.getBounds().width - this.spacing
+    );
+
+    container.setX(
+      leftMostContainer.getBounds().left -
+        container.getBounds().width +
+        this.symbolWidth / 2 -
+        this.spacing
+    );
   }
 }
