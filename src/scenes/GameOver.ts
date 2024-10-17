@@ -42,11 +42,13 @@ export class GameOver extends Scene {
     this.background = this.add.image(512, 384, "background");
     this.background.setAlpha(0.5);
 
+    const crossingLineHeight = this.symbolWidth;
+
     this.finishLine = this.add.rectangle(
-      (this.camera.width * 2) / 3,
+      (this.camera.width * 5) / 8,
       384,
-      (this.camera.width * 1) / 3,
-      50,
+      (this.camera.width * 3) / 8,
+      crossingLineHeight,
       0x000000,
       1
     );
@@ -55,8 +57,8 @@ export class GameOver extends Scene {
     this.startLine = this.add.rectangle(
       0,
       384,
-      (this.camera.width * 1) / 3,
-      50,
+      (this.camera.width * 3) / 8,
+      crossingLineHeight,
       0x000000,
       1
     );
@@ -88,14 +90,16 @@ export class GameOver extends Scene {
     //   this.container1.getBounds().height
     // );
 
-    const speed = 0.1;
+    const speed = 3;
 
     this.startLine.setToTop();
     this.finishLine.setToTop();
 
-    this.input.once("pointerdown", () => {
-      this.animateXToFinishLine(this.container1, speed);
-      this.animateXToFinishLine(this.container2, speed);
+    this.input.on("pointerdown", () => {
+      if (!this.isSpinning()) {
+        this.animateXToFinishLine(this.container1, speed);
+        this.animateXToFinishLine(this.container2, speed);
+      }
     });
   }
 
@@ -125,16 +129,43 @@ export class GameOver extends Scene {
       : this.container2;
   }
 
+  private spinCounter = 0;
+  private spinCountMax = 10;
+
+  isSpinning() {
+    return (
+      this.tweens.isTweening(this.container1) ||
+      this.tweens.isTweening(this.container2)
+    );
+  }
+  stopSpinner() {
+    this.tweens.killAll();
+  }
+
+  private spinnerStopTimer: Phaser.Time.TimerEvent | null = null;
+
   animateXToFinishLine(container: Phaser.GameObjects.Container, speed: number) {
-    const distance = this.finishLine.getBounds().left - container.x;
+    const distance =
+      this.finishLine.getBounds().left - container.getBounds().left;
     const duration = Math.round(distance / speed);
 
+    // TODO: reuse tween
     this.tweens.add({
       targets: container,
-      x: this.finishLine.getBounds().left + this.symbolWidth / 2,
+      x: "+=" + distance,
       duration,
       ease: "linear",
       onComplete: () => {
+        this.spinCounter++;
+        if (this.spinCounter >= this.spinCountMax && !this.spinnerStopTimer) {
+          const randomDelay = Phaser.Math.Between(1000, 3000);
+          this.spinnerStopTimer = this.time.delayedCall(randomDelay, () => {
+            this.stopSpinner();
+            this.spinCounter = 0;
+            this.spinnerStopTimer = null;
+          });
+        }
+
         const otherContainer = this.getLeftMostContainer();
         container.setX(
           otherContainer.x - container.getBounds().width - this.spacing
