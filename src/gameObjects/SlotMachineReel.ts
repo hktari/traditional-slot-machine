@@ -18,6 +18,8 @@ export class SlotMachineReel extends GameObjects.Container {
 
   private isSpinning: boolean = false;
 
+  private symbolStripQueue: GameObjects.Container[] = [];
+
   private spinResult: Phaser.GameObjects.Image;
   constructor(
     scene: Scene,
@@ -29,8 +31,12 @@ export class SlotMachineReel extends GameObjects.Container {
     super(scene, x, y);
     this.initialY = y;
     const shuffledSymbols = this._duplicateAndShuffle(symbols);
-    this._addSymbolStrips(scene, 3, shuffledSymbols);
-    
+    this.symbolStripQueue = this._createAndAddSymbolStrips(
+      scene,
+      3,
+      shuffledSymbols
+    );
+
     this.spinResult = scene.add.image(0, 0, shuffledSymbols[0]);
     this.add(this.spinResult);
 
@@ -56,29 +62,52 @@ export class SlotMachineReel extends GameObjects.Container {
 
   private _playSpinAnimation() {
     const { height } = this.getBounds();
-
-    const targetY =
-      this.initialY -
-      height -
-      SlotMachineReel.symbolHeight +
-      SlotMachineReel.verticalSpacing / 2;
-
     const { singleRevolutionDurationMs, revolutionsCount } =
       this.animationPreferences;
+
+    const targetY = this.initialY - revolutionsCount * height;
+    // -
+    // SlotMachineReel.symbolHeight +
+    // SlotMachineReel.verticalSpacing / 2
 
     return this.scene.tweens.add({
       targets: this,
       y: targetY,
-      duration: singleRevolutionDurationMs,
-      ease: "Cubic.inOut",
+      duration: singleRevolutionDurationMs * revolutionsCount,
+      ease: "linear",
       repeat: 0,
       onUpdate: () => {
-        console.log("onUpdate", this.y, targetY);
-        if (this.y - 100 >= targetY) {
-          this.y = this.initialY;
+        // peek symbol strip queue and check if the top symbol strip is within 100px of targetY
+        const topStrip = this.symbolStripQueue[0];
+        const { top } = topStrip.getBounds();
+        console.log("onUpdate", top, targetY);
+        if (top < targetY + 100) {
+          this._moveFirstStripToEnd();
         }
       },
+      onComplete: () => {
+        this.setY(this.initialY);
+        const { top } = this.symbolStripQueue[0].getBounds();
+        console.log("onComplete 1", top, this.y);
+
+        this._translateYChildrenBy(Math.abs(targetY - this.initialY));
+        
+      },
     });
+  }
+  private _translateYChildrenBy(distance: number) {
+    this.list.forEach((child) => {
+      const container = child as GameObjects.Container;
+      container.setY(container.y + distance);
+    });
+  }
+
+  private _moveFirstStripToEnd() {
+    const firstStrip = this.symbolStripQueue.shift()!; // cannot be undefined
+    const lastStrip = this.symbolStripQueue[this.symbolStripQueue.length - 1];
+    const { bottom } = lastStrip.getBounds();
+    firstStrip.setY(bottom + SlotMachineReel.verticalSpacing);
+    this.symbolStripQueue.push(firstStrip);
   }
 
   spin(resultSymbol?: string): Promise<string> {
@@ -92,6 +121,7 @@ export class SlotMachineReel extends GameObjects.Container {
       this._updateSymbolsVisibility();
 
       this._playSpinAnimation().on("complete", () => {
+        console.log("onComplete 2");
         if (!resultSymbol) {
           // TODO: extract into utility file
           resultSymbol = Phaser.Utils.Array.GetRandom(this.symbols);
@@ -105,9 +135,7 @@ export class SlotMachineReel extends GameObjects.Container {
     });
   }
 
-  private symbolStrips: GameObjects.Container[];
-
-  private _addSymbolStrips(
+  private _createAndAddSymbolStrips(
     scene: Scene,
     stripCount: number,
     symbols: string[]
@@ -124,6 +152,7 @@ export class SlotMachineReel extends GameObjects.Container {
       symbolStrips.push(symbolStrip);
     }
     this.add(symbolStrips);
+    return symbolStrips;
   }
 
   private _addSymbols(
