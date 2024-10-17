@@ -18,8 +18,6 @@ export class SlotMachineReel extends GameObjects.Container {
 
   private isSpinning: boolean = false;
 
-  private symbolStripQueue: GameObjects.Container[] = [];
-
   private spinResult: Phaser.GameObjects.Image;
   constructor(
     scene: Scene,
@@ -30,14 +28,14 @@ export class SlotMachineReel extends GameObjects.Container {
   ) {
     super(scene, x, y);
     this.initialY = y;
-    const shuffledSymbols = this._duplicateAndShuffle(symbols);
-    this.symbolStripQueue = this._createAndAddSymbolStrips(
-      scene,
-      3,
-      shuffledSymbols
-    );
 
-    this.spinResult = scene.add.image(0, 0, shuffledSymbols[0]);
+    const symbolsPrepared = this._createSymbolsDuplicates(
+      this._shuffleSymbols(),
+      this.animationPreferences.revolutionsCount
+    );
+    this._addSymbols(this, symbolsPrepared, scene);
+
+    this.spinResult = scene.add.image(0, 0, symbolsPrepared[0]);
     this.add(this.spinResult);
 
     this._updateSymbolsVisibility();
@@ -55,9 +53,12 @@ export class SlotMachineReel extends GameObjects.Container {
     this.spinResult.setVisible(false);
   }
 
-  _duplicateAndShuffle(symbols: string[]) {
-    const duplicatedSymbols = [...symbols, ...symbols];
-    return duplicatedSymbols.sort(() => Math.random() - 0.5);
+  _shuffleSymbols() {
+    return this.symbols.sort(() => Math.random() - 0.5);
+  }
+
+  _createSymbolsDuplicates(symbols: string[], count: number) {
+    return Array.from({ length: count }, () => symbols).flat();
   }
 
   private _playSpinAnimation() {
@@ -66,48 +67,19 @@ export class SlotMachineReel extends GameObjects.Container {
       this.animationPreferences;
 
     const targetY = this.initialY - revolutionsCount * height;
+
     // -
     // SlotMachineReel.symbolHeight +
     // SlotMachineReel.verticalSpacing / 2
 
     return this.scene.tweens.add({
       targets: this,
+      yoyo: true,
       y: targetY,
       duration: singleRevolutionDurationMs * revolutionsCount,
-      ease: "linear",
+      ease: "Cubic.inOut",
       repeat: 0,
-      onUpdate: () => {
-        // peek symbol strip queue and check if the top symbol strip is within 100px of targetY
-        const topStrip = this.symbolStripQueue[0];
-        const { top } = topStrip.getBounds();
-        console.log("onUpdate", top, targetY);
-        if (top < targetY + 100) {
-          this._moveFirstStripToEnd();
-        }
-      },
-      onComplete: () => {
-        this.setY(this.initialY);
-        const { top } = this.symbolStripQueue[0].getBounds();
-        console.log("onComplete 1", top, this.y);
-
-        this._translateYChildrenBy(Math.abs(targetY - this.initialY));
-        
-      },
     });
-  }
-  private _translateYChildrenBy(distance: number) {
-    this.list.forEach((child) => {
-      const container = child as GameObjects.Container;
-      container.setY(container.y + distance);
-    });
-  }
-
-  private _moveFirstStripToEnd() {
-    const firstStrip = this.symbolStripQueue.shift()!; // cannot be undefined
-    const lastStrip = this.symbolStripQueue[this.symbolStripQueue.length - 1];
-    const { bottom } = lastStrip.getBounds();
-    firstStrip.setY(bottom + SlotMachineReel.verticalSpacing);
-    this.symbolStripQueue.push(firstStrip);
   }
 
   spin(resultSymbol?: string): Promise<string> {
@@ -133,26 +105,6 @@ export class SlotMachineReel extends GameObjects.Container {
         resolve(resultSymbol);
       });
     });
-  }
-
-  private _createAndAddSymbolStrips(
-    scene: Scene,
-    stripCount: number,
-    symbols: string[]
-  ) {
-    const symbolStrips = [];
-
-    const spacing = SlotMachineReel.verticalSpacing;
-
-    for (let i = 0, curY = 0; i < stripCount; i++) {
-      const symbolStrip = new GameObjects.Container(scene, 0, curY);
-      this._addSymbols(symbolStrip, symbols, scene);
-      const { bottom } = symbolStrip.getBounds();
-      curY = bottom + spacing;
-      symbolStrips.push(symbolStrip);
-    }
-    this.add(symbolStrips);
-    return symbolStrips;
   }
 
   private _addSymbols(
