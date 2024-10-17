@@ -91,15 +91,15 @@ export class Game extends Scene {
     this._drawDebugCenter();
   }
 
+  private reelSymbols = [
+    "slotSymbol1",
+    "slotSymbol2",
+    "slotSymbol3",
+    "slotSymbol4",
+    "slotSymbol5",
+  ];
   _createReels() {
     this.slotMachineReels = [];
-    const reelSymbols = [
-      "slotSymbol1",
-      "slotSymbol2",
-      "slotSymbol3",
-      "slotSymbol4",
-      "slotSymbol5",
-    ];
 
     const offsetXToCenter = 5;
     const distanceBetweennReels = 130;
@@ -115,7 +115,7 @@ export class Game extends Scene {
         this,
         leftReelX + i * distanceBetweennReels,
         leftReelY,
-        reelSymbols,
+        this.reelSymbols,
         this.animationPreferences
       );
       this.slotMachineReels.push(reel);
@@ -168,9 +168,22 @@ export class Game extends Scene {
       // TODO: display result
       // TODO: hide slotMachineReels
     });
-    this.slotMachineReels.forEach((reel) =>
-      reel.playSpinAnimation(this.animationPreferences)
-    );
+
+    const spinResult = this._getRandomSpinResult();
+
+    for (let i = 0; i < this.slotMachineReels.length; i++) {
+      this.slotMachineReels[i].spin(spinResult[i]);
+    }
+  }
+
+  private _getRandomSpinResult() {
+    const results = [];
+    for (let i = 0; i < this.slotMachineReels.length; i++) {
+      // TODO: extract into utility file
+      const randomSymbol = Phaser.Utils.Array.GetRandom(this.reelSymbols);
+      results.push(randomSymbol);
+    }
+    return results;
   }
 
   private _updateLeverVisibility() {

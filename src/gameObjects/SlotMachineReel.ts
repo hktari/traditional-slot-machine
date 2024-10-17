@@ -40,7 +40,13 @@ export class SlotMachineReel extends GameObjects.Container {
     const shuffledSymbols = this._duplicateAndShuffle(symbols);
     this._addSymbols(shuffledSymbols, scene);
 
-    this.spinResult = scene.add.image(0, 0, shuffledSymbols[0]);
+    this.spinResult = scene.add.image(
+      0,
+      y - SlotMachineReel.symbolHeight / 2,
+      shuffledSymbols[0]
+    );
+    this.add(this.spinResult);
+    this.spinResult.setVisible(false);
 
     this._updateSymbolsVisibility();
 
@@ -93,21 +99,23 @@ export class SlotMachineReel extends GameObjects.Container {
   }
 
   spin(resultSymbol?: string) {
+    if(this.isSpinning) {
+      console.warn("Reel is already spinning. Ignoring spin request.");
+      return;
+    }
+
     this.playSpinAnimation(this.animationPreferences).on("complete", () => {
       if (!resultSymbol) {
+        // TODO: extract into utility file
         resultSymbol = Phaser.Utils.Array.GetRandom(this.symbols);
       }
-      this.setSpinResult(resultSymbol);
+      this.showSpinResult(resultSymbol);
     });
   }
 
-  setSpinResult(symbol: string) {
-    if (this.spinResult) {
-      this.remove(this.spinResult);
-    }
-    const y = this.initialY - SlotMachineReel.symbolHeight / 2;
-    this.spinResult = this.scene.add.image(0, y, symbol);
-    this.add(this.spinResult);
+  showSpinResult(symbol: string) {
+    this.spinResult.setTexture(symbol);
+    this.spinResult.setVisible(true);
   }
 
   private _addSymbols(symbols: string[], scene: Scene) {
