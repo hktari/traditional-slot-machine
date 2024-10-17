@@ -25,11 +25,29 @@ export class GameOver extends Scene {
     this.background = this.add.image(512, 384, "background");
     this.background.setAlpha(0.5);
 
-    this.finishLine = this.add.rectangle(675, 384, 5, 50, 0x00aa44, 0.8);
-    this.startLine = this.add.rectangle(175, 384, 5, 50, 0x44aa00, 0.8);
+    this.finishLine = this.add.rectangle(
+      (this.camera.width * 2) / 3,
+      384,
+      (this.camera.width * 1) / 3,
+      50,
+      0x000000,
+      1
+    );
+    this.finishLine.setOrigin(0, 0.5);
+
+    this.startLine = this.add.rectangle(
+      0,
+      384,
+      this.camera.width *  1/ 3,
+      50,
+      0x000000,
+      1
+    );
+
+    this.startLine.setOrigin(0, 0.5);
 
     this.container1 = this.add.container(
-      this.startLine.x + this.rectangleWidth / 2,
+      this.startLine.getBounds().right + this.rectangleWidth / 2,
       this.startLine.y
     );
     for (let i = 0; i < 5; i++) {
@@ -38,13 +56,16 @@ export class GameOver extends Scene {
         0,
         this.rectangleWidth,
         this.rectangleWidth,
-        0xaa0044,
+        0xaa4400,
         1
       );
       this.container1.add(rectangle);
     }
 
-    this.container2 = this.add.container(this.startLine.x, this.startLine.y);
+    this.container2 = this.add.container(
+      this.startLine.getBounds().right,
+      this.startLine.y
+    );
 
     for (let i = 0; i < 5; i++) {
       const rectangle = this.add.rectangle(
@@ -63,17 +84,19 @@ export class GameOver extends Scene {
         this.rectangleWidth / 2 -
         this.spacing
     );
-
-    const graphics = this.add.graphics();
-    graphics.lineStyle(2, 0xff0000, 1);
-    graphics.strokeRect(
-      this.container1.getBounds().x,
-      this.container1.getBounds().y,
-      this.container1.getBounds().width,
-      this.container1.getBounds().height
-    );
+    // const graphics = this.add.graphics();
+    // graphics.lineStyle(2, 0xff0000, 1);
+    // graphics.strokeRect(
+    //   this.container1.getBounds().x,
+    //   this.container1.getBounds().y,
+    //   this.container1.getBounds().width,
+    //   this.container1.getBounds().height
+    // );
 
     const speed = 0.1;
+
+    this.startLine.setToTop()
+    this.finishLine.setToTop()
 
     this.input.once("pointerdown", () => {
       this.animateXToFinishLine(this.container1, speed);
@@ -94,19 +117,21 @@ export class GameOver extends Scene {
   }
 
   animateXToFinishLine(container: Phaser.GameObjects.Container, speed: number) {
-    const distance = this.finishLine.x - container.x;
-    const duration = distance / speed;
+    const distance = this.finishLine.getBounds().left - container.x;
+    const duration = Math.round(distance / speed);
 
     this.tweens.add({
       targets: container,
-      x: this.finishLine.x + this.rectangleWidth / 2,
+      x: this.finishLine.getBounds().left + this.rectangleWidth / 2,
       duration,
       ease: "linear",
       onComplete: () => {
         const otherContainer = this.getLeftMostContainer();
-        container.setX(otherContainer.x - container.getBounds().width  - this.spacing);
+        container.setX(
+          otherContainer.x - container.getBounds().width - this.spacing
+        );
         this.animateXToFinishLine(container, speed);
-      }
+      },
     });
   }
 }
