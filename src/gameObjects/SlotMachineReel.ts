@@ -15,15 +15,46 @@ export class SlotMachineReel extends GameObjects.Container {
   static verticalSpacing = 60;
 
   private initialY = 0;
-  constructor(scene: Scene, x: number, y: number, symbols: string[]) {
+
+  private _isSpinning: boolean = false;
+  get isSpinning(): boolean {
+    return this._isSpinning;
+  }
+
+  set isSpinning(isSpinning: boolean) {
+    this._isSpinning = isSpinning;
+
+    this._updateSymbolsVisibility();
+  }
+
+  private spinResult: Phaser.GameObjects.Image;
+  constructor(
+    scene: Scene,
+    x: number,
+    y: number,
+    private symbols: string[],
+    private animationPreferences: SlotMachineReelAnimationPreferences
+  ) {
     super(scene, x, y);
     this.initialY = y;
+    const shuffledSymbols = this._duplicateAndShuffle(symbols);
+    this._addSymbols(shuffledSymbols, scene);
 
-    this._addSymbols(this._duplicateAndShuffle(symbols), scene);
+    this.spinResult = scene.add.image(0, 0, shuffledSymbols[0]);
+
+    this._updateSymbolsVisibility();
 
     this._addDebugBackground(scene);
 
     scene.add.existing(this);
+  }
+
+  private _updateSymbolsVisibility() {
+    this.list.forEach((child) => {
+      const symbolImage = child as GameObjects.Image;
+      symbolImage.setVisible(this.isSpinning);
+    });
+    this.spinResult.setVisible(!this.isSpinning);
   }
 
   _duplicateAndShuffle(symbols: string[]) {
@@ -31,7 +62,7 @@ export class SlotMachineReel extends GameObjects.Container {
     return duplicatedSymbols.sort(() => Math.random() - 0.5);
   }
 
-  spin({
+  playSpinAnimation({
     singleRevolutionDurationMs,
     revolutionsCount,
   }: SlotMachineReelAnimationPreferences) {
@@ -43,7 +74,7 @@ export class SlotMachineReel extends GameObjects.Container {
       SlotMachineReel.symbolHeight / 2 +
       SlotMachineReel.verticalSpacing / 2;
 
-    this.scene.tweens.chain({
+    return this.scene.tweens.chain({
       targets: this,
       tweens: [
         {
@@ -59,6 +90,24 @@ export class SlotMachineReel extends GameObjects.Container {
       ],
       repeat: revolutionsCount,
     });
+  }
+
+  spin(resultSymbol?: string) {
+    this.playSpinAnimation(this.animationPreferences).on("complete", () => {
+      if (!resultSymbol) {
+        resultSymbol = Phaser.Utils.Array.GetRandom(this.symbols);
+      }
+      this.setSpinResult(resultSymbol);
+    });
+  }
+
+  setSpinResult(symbol: string) {
+    if (this.spinResult) {
+      this.remove(this.spinResult);
+    }
+    const y = this.initialY - SlotMachineReel.symbolHeight / 2;
+    this.spinResult = this.scene.add.image(0, y, symbol);
+    this.add(this.spinResult);
   }
 
   private _addSymbols(symbols: string[], scene: Scene) {

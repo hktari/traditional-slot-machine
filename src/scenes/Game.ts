@@ -22,6 +22,19 @@ export class Game extends Scene {
   slotMachineReels: SlotMachineReel[];
   slotMachineReelsBackground: SlotMachineReelBackground;
 
+  /**
+   * Spin animation preferences
+   */
+  SpinDurationMs = 3000;
+  revolutionsCount = 30;
+
+  singleRevolutionDurationMs = this.SpinDurationMs / this.revolutionsCount;
+
+  animationPreferences = {
+    singleRevolutionDurationMs: this.singleRevolutionDurationMs,
+    revolutionsCount: this.revolutionsCount,
+  };
+
   get isSpinning(): boolean {
     return this._isSpinning;
   }
@@ -102,7 +115,8 @@ export class Game extends Scene {
         this,
         leftReelX + i * distanceBetweennReels,
         leftReelY,
-        reelSymbols
+        reelSymbols,
+        this.animationPreferences
       );
       this.slotMachineReels.push(reel);
     }
@@ -145,24 +159,18 @@ export class Game extends Scene {
     console.log("Spin the reels!");
 
     this.isSpinning = true;
-
-    const SpinDurationMs = 3000;
-    const revolutionsCount = 30;
-
-    const singleRevolutionDurationMs = SpinDurationMs / revolutionsCount;
-
-    const animationPreferences = {
-      singleRevolutionDurationMs,
-      revolutionsCount,
-    };
-    const tween = this.slotMachineReelsBackground.spin(animationPreferences);
+    const tween = this.slotMachineReelsBackground.spin(
+      this.animationPreferences
+    );
 
     tween.on("complete", () => {
       this.isSpinning = false;
       // TODO: display result
       // TODO: hide slotMachineReels
     });
-    this.slotMachineReels.forEach((reel) => reel.spin(animationPreferences));
+    this.slotMachineReels.forEach((reel) =>
+      reel.playSpinAnimation(this.animationPreferences)
+    );
   }
 
   private _updateLeverVisibility() {
