@@ -98,18 +98,21 @@ export class SlotMachineReel extends GameObjects.Container {
     });
   }
 
-  spin(resultSymbol?: string) {
-    if(this.isSpinning) {
+  spin(resultSymbol?: string): Promise<string> {
+    if (this.isSpinning) {
       console.warn("Reel is already spinning. Ignoring spin request.");
-      return;
+      return Promise.reject(false);
     }
 
-    this.playSpinAnimation(this.animationPreferences).on("complete", () => {
-      if (!resultSymbol) {
-        // TODO: extract into utility file
-        resultSymbol = Phaser.Utils.Array.GetRandom(this.symbols);
-      }
-      this.showSpinResult(resultSymbol);
+    return new Promise((resolve) => {
+      this.playSpinAnimation(this.animationPreferences).on("complete", () => {
+        if (!resultSymbol) {
+          // TODO: extract into utility file
+          resultSymbol = Phaser.Utils.Array.GetRandom(this.symbols);
+        }
+        this.showSpinResult(resultSymbol);
+        resolve(resultSymbol);
+      });
     });
   }
 

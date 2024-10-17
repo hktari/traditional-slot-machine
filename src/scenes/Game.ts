@@ -155,25 +155,26 @@ export class Game extends Scene {
     );
   }
 
-  spin() {
-    console.log("Spin the reels!");
-
+  async spin() {
     this.isSpinning = true;
+
+    // TODO: make spin interface match SlotMachineReel
+    // TODO: await animation completion
     const tween = this.slotMachineReelsBackground.spin(
       this.animationPreferences
     );
 
-    tween.on("complete", () => {
-      this.isSpinning = false;
-      // TODO: display result
-      // TODO: hide slotMachineReels
-    });
-
     const spinResult = this._getRandomSpinResult();
 
+    const spinRequests = [];
     for (let i = 0; i < this.slotMachineReels.length; i++) {
-      this.slotMachineReels[i].spin(spinResult[i]);
+      const spinRequest = this.slotMachineReels[i].spin(spinResult[i]);
+      spinRequests.push(spinRequest);
     }
+
+    await Promise.all(spinRequests);
+
+    this.isSpinning = false;
   }
 
   private _getRandomSpinResult() {
