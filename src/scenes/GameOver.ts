@@ -31,10 +31,9 @@ export class GameOver extends Scene {
     "slotSymbol2",
     "slotSymbol3",
     "slotSymbol4",
-    "slotSymbol5",
   ];
 
-  private spacing = 10;
+  private spacing = 50;
   create() {
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0xaabb00);
@@ -81,19 +80,13 @@ export class GameOver extends Scene {
         this.symbolWidth / 2 -
         this.spacing
     );
-    // const graphics = this.add.graphics();
-    // graphics.lineStyle(2, 0xff0000, 1);
-    // graphics.strokeRect(
-    //   this.container1.getBounds().x,
-    //   this.container1.getBounds().y,
-    //   this.container1.getBounds().width,
-    //   this.container1.getBounds().height
-    // );
 
     const speed = 3;
 
-    this.startLine.setToTop();
-    this.finishLine.setToTop();
+    // this.startLine.setToTop();
+    // this.finishLine.setToTop();
+
+    this.redrawDebugGraphics();
 
     this.input.on("pointerdown", () => {
       if (!this.isSpinning()) {
@@ -103,6 +96,26 @@ export class GameOver extends Scene {
     });
   }
 
+  private debugGraphics: Phaser.GameObjects.Graphics[] = [];
+
+  redrawDebugGraphics() {
+    this.children.remove(this.debugGraphics);
+    this.debugGraphics = [];
+    this.debugGraphics.push(this.drawContainerOutlines(this.container1));
+    this.debugGraphics.push(this.drawContainerOutlines(this.container2));
+  }
+
+  drawContainerOutlines(container: Phaser.GameObjects.Container) {
+    const graphics = this.add.graphics();
+    graphics.lineStyle(2, 0xff0000, 1);
+    graphics.strokeRect(
+      container.getBounds().x,
+      container.getBounds().y,
+      container.getBounds().width,
+      container.getBounds().height
+    );
+    return graphics;
+  }
   createContainerWithSymbols(x: number, y: number) {
     const container = this.add.container(x, y);
     for (let i = 0; i < this.symbols.length; i++) {
@@ -163,6 +176,7 @@ export class GameOver extends Scene {
             this.stopSpinner();
             this.spinCounter = 0;
             this.spinnerStopTimer = null;
+            this.redrawDebugGraphics();
           });
         }
 
