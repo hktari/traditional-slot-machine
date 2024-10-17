@@ -16,6 +16,8 @@ export class GameOver extends Scene {
     super("GameOver");
   }
 
+  private spacing = 10;
+  private rectangleWidth = 50;
   create() {
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0xaabb00);
@@ -26,18 +28,16 @@ export class GameOver extends Scene {
     this.finishLine = this.add.rectangle(675, 384, 5, 50, 0x00aa44, 0.8);
     this.startLine = this.add.rectangle(175, 384, 5, 50, 0x44aa00, 0.8);
 
-    const spacing = 10;
-    const rectangleWidth = 50;
     this.container1 = this.add.container(
-      this.startLine.x + rectangleWidth / 2,
+      this.startLine.x + this.rectangleWidth / 2,
       this.startLine.y
     );
     for (let i = 0; i < 5; i++) {
       const rectangle = this.add.rectangle(
-        i * (rectangleWidth + 10),
+        i * (this.rectangleWidth + 10),
         0,
-        rectangleWidth,
-        rectangleWidth,
+        this.rectangleWidth,
+        this.rectangleWidth,
         0xaa0044,
         1
       );
@@ -48,10 +48,10 @@ export class GameOver extends Scene {
 
     for (let i = 0; i < 5; i++) {
       const rectangle = this.add.rectangle(
-        i * (rectangleWidth + spacing),
+        i * (this.rectangleWidth + this.spacing),
         0,
-        rectangleWidth,
-        rectangleWidth,
+        this.rectangleWidth,
+        this.rectangleWidth,
         0xaa4400,
         1
       );
@@ -60,8 +60,8 @@ export class GameOver extends Scene {
     this.container2.setX(
       this.container1.getBounds().left -
         this.container2.getBounds().width +
-        rectangleWidth / 2 -
-        spacing
+        this.rectangleWidth / 2 -
+        this.spacing
     );
 
     const graphics = this.add.graphics();
@@ -73,15 +73,40 @@ export class GameOver extends Scene {
       this.container1.getBounds().height
     );
 
+    const speed = 0.1;
+
     this.input.once("pointerdown", () => {
-      this.tweens.add({
-        targets: this.container1,
-        x: "+=500",
-        repeat: -1,
-        duration: 5000,
-        ease: "linear",
-        onUpdate: () => {},
-      });
+      this.animateXToFinishLine(this.container1, speed);
+      this.animateXToFinishLine(this.container2, speed);
+    });
+  }
+
+  getRightMostContainer() {
+    return this.container1.getBounds().right > this.container2.getBounds().right
+      ? this.container1
+      : this.container2;
+  }
+
+  getLeftMostContainer() {
+    return this.container1.getBounds().left < this.container2.getBounds().left
+      ? this.container1
+      : this.container2;
+  }
+
+  animateXToFinishLine(container: Phaser.GameObjects.Container, speed: number) {
+    const distance = this.finishLine.x - container.x;
+    const duration = distance / speed;
+
+    this.tweens.add({
+      targets: container,
+      x: this.finishLine.x + this.rectangleWidth / 2,
+      duration,
+      ease: "linear",
+      onComplete: () => {
+        const otherContainer = this.getLeftMostContainer();
+        container.setX(otherContainer.x - container.getBounds().width  - this.spacing);
+        this.animateXToFinishLine(container, speed);
+      }
     });
   }
 }
