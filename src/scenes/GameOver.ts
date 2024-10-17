@@ -33,7 +33,7 @@ export class GameOver extends Scene {
     "slotSymbol4",
   ];
 
-  private spacing = 50;
+  private spacing = 0;
   create() {
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0xaabb00);
@@ -74,12 +74,7 @@ export class GameOver extends Scene {
       this.startLine.y
     );
 
-    this.container2.setX(
-      this.container1.getBounds().left -
-        this.container2.getBounds().width +
-        this.symbolWidth / 2 -
-        this.spacing
-    );
+    this.alignContainers();
 
     const speed = 3;
 
@@ -98,6 +93,17 @@ export class GameOver extends Scene {
 
   private debugGraphics: Phaser.GameObjects.Graphics[] = [];
 
+  alignContainers() {
+    const rightMostContainer = this.getRightMostContainer();
+    const leftMostContainer = this.getLeftMostContainer();
+
+    leftMostContainer.setX(
+      rightMostContainer.getBounds().left -
+        leftMostContainer.getBounds().width +
+        this.symbolWidth / 2 -
+        this.spacing
+    );
+  }
   redrawDebugGraphics() {
     this.children.remove(this.debugGraphics);
     this.debugGraphics = [];
@@ -176,6 +182,7 @@ export class GameOver extends Scene {
             this.stopSpinner();
             this.spinCounter = 0;
             this.spinnerStopTimer = null;
+            this.alignContainers();
             this.redrawDebugGraphics();
           });
         }
