@@ -127,6 +127,9 @@ export class GameOver extends Scene {
     this.payLine = new IndicatorLine(this, centerPointX, y);
   }
 
+  /**
+   * Aligns the containers so that the leftmost container is placed behind the rightmost container
+   */
   alignContainers() {
     const leftMostContainer = this.getLeftMostContainer();
     this.placeContainerBehindOther(leftMostContainer);
@@ -176,7 +179,7 @@ export class GameOver extends Scene {
   }
 
   private spinCounter = 0;
-  private spinCountMax = 10;
+  private spinCountMax = 11;
 
   isSpinning() {
     return (
@@ -184,33 +187,31 @@ export class GameOver extends Scene {
       this.tweens.isTweening(this.container2)
     );
   }
-  stopSpinner() {
+  stopAnimations() {
     this.tweens.killAll();
   }
 
   private spinnerStopTimer: Phaser.Time.TimerEvent | null = null;
 
   animateXToFinishLine(container: Phaser.GameObjects.Container, speed: number) {
-    const distance =
-      this.finishLine.getBounds().left - container.getBounds().left + this.symbolWidth / 2;
-    const duration = Math.round(distance / speed);
+    const distanceToFinishLine =
+      this.finishLine.getBounds().left - container.getBounds().left;
+
+    const duration = Math.round(distanceToFinishLine / speed);
 
     // TODO: reuse tween
     this.tweens.add({
       targets: container,
-      x: "+=" + distance,
+      x: "+=" + distanceToFinishLine,
       duration,
       ease: "linear",
+      // TODO: extract onComplete
       onComplete: () => {
         this.spinCounter++;
         if (this.spinCounter >= this.spinCountMax && !this.spinnerStopTimer) {
           // const randomDelay = Phaser.Math.Between(1000, 3000);
           // this.spinnerStopTimer = this.time.delayedCall(randomDelay, () => {
-          this.stopSpinner();
-          this.spinCounter = 0;
-          this.spinnerStopTimer = null;
-          this.alignContainers();
-          this.redrawDebugGraphics();
+          this.stopAnimationAndDisplayResult();
           // });
         } else {
           this.placeContainerBehindOther(container);
@@ -219,6 +220,15 @@ export class GameOver extends Scene {
         }
       },
     });
+  }
+  stopAnimationAndDisplayResult() {
+    this.stopAnimations();
+    this.spinCounter = 0;
+    // TODO: needed ?
+    this.spinnerStopTimer = null; 
+    // After the animation has stopped. The spacing between the containers is not correct
+    this.alignContainers();
+    this.redrawDebugGraphics();
   }
   placeContainerBehindOther(container: Phaser.GameObjects.Container) {
     const leftMostContainer =
