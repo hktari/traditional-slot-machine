@@ -137,7 +137,8 @@ export class SlotMachineReel extends GameObjects.GameObject {
     // this.getBottomMostContainer().placeBelowOf(this.getTopMostContainer());
 
     // // const randomSymbol = Phaser.Math.RND.pick(this.symbols);
-    // this.animateContainerToSymbol(this.getTopMostContainer(), "slotSymbol4");
+    // TODO: refactor
+    this.animateContainerToSymbol(this.getBottomMostContainer(), this.spinResultSymbol!);
 
     // this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
 
