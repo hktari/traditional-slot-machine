@@ -13,10 +13,10 @@ export class SlotMachineReel extends GameObjects.Container {
   static symbolHeight = 100;
 
   static reelWidth = 108;
-  static reelHeight = 210;
   static reelBorder = 5;
+  static reelHeight = 205 + SlotMachineReel.reelBorder * 2;
 
-  static verticalSpacing = 60;
+  static verticalSpacing = 30;
 
   container1: Phaser.GameObjects.Container;
   container2: Phaser.GameObjects.Container;
@@ -32,6 +32,19 @@ export class SlotMachineReel extends GameObjects.Container {
     private animationPreferences: SlotMachineReelAnimationPreferences
   ) {
     super(scene, x, y);
+
+
+    const graphics = scene.add.graphics();
+    graphics.lineStyle(2, 0xff22ff);
+    graphics.strokeRect(
+      -SlotMachineReel.reelWidth / 2,
+      -SlotMachineReel.reelHeight / 2,
+      SlotMachineReel.reelWidth,
+      SlotMachineReel.reelHeight
+    );
+    graphics.setDepth(2000);
+    this.add(graphics);
+
 
     this.container1 = new SymbolsContainer(
       scene,
@@ -51,30 +64,37 @@ export class SlotMachineReel extends GameObjects.Container {
     );
     this.add(this.container1);
     this.add(this.container2);
-    
-    // this.createIndicatorLines({startY: })
+
+    this.createIndicatorLines();
     // this.setContainerInitialPositions();
 
     scene.add.existing(this);
   }
-  private createIndicatorLines({
-    startY,
-    finishY,
-    x,
-  }: {
-    startY: number;
-    finishY: number;
-    x: number;
-  }) {
+  private createIndicatorLines() {
     const width = SymbolsContainer.symbolWidth;
-    const height = 5;
-    this.startLine = new IndicatorLine(this.scene, x, startY, width, height);
-    this.finishLine = new IndicatorLine(this.scene, x, finishY, width, height);
+    const height = 2;
+    this.startLine = new IndicatorLine(
+      this.scene,
+      this.x,
+      this.y - SlotMachineReel.reelHeight / 2,
+      width,
+      height
+    );
+    this.finishLine = new IndicatorLine(
+      this.scene,
+      this.x,
+      this.y + SlotMachineReel.reelHeight / 2,
+      width,
+      height
+    );
+    // this.startLine.setOrigin(0.5, 0);
+    // this.finishLine.setOrigin(0.5, 0);
 
-    const centerPointY = (finishY - startY) / 2 + startY;
+    const centerPointY =
+      (this.finishLine.y - this.startLine.y) / 2 + this.startLine.y;
     this.payLine = new IndicatorLine(
       this.scene,
-      x,
+      this.x,
       centerPointY,
       width,
       height
