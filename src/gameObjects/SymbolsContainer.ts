@@ -4,6 +4,7 @@ import { SlotMachineReelAnimationPreferences } from "./SlotMachineReel";
 
 export default class SymbolsContainer extends Phaser.GameObjects.Container {
   static symbolWidth: number = 100;
+  static symbolHeight: number = 100;
 
   constructor(
     scene: Phaser.Scene,

@@ -92,10 +92,11 @@ export class SlotMachineReel extends GameObjects.GameObject {
   private spinCountMax = 11;
 
   animateContainerToFinishLine(container: SymbolsContainer, speed: number) {
-    const distanceToFinishLine =
+    const distanceToFinishLine = Math.abs(
       this.finishLine.getBounds().bottom -
-      container.getBounds().bottom +
-      SlotMachineReel.symbolHeight / 2;
+        container.getBounds().top +
+        SlotMachineReel.symbolHeight / 2
+    );
 
     const duration = Math.round(distanceToFinishLine / speed);
 
@@ -140,16 +141,17 @@ export class SlotMachineReel extends GameObjects.GameObject {
     // // After the animation has stopped. The spacing between the containers is not correct
     this.debugUtils.redrawDebugOutlines();
   }
-  
+
   setContainerInitialPositions() {
     // Align first image with payline
     this.container1.setX(this.payLine.x);
     this.container1.setY(this.payLine.y);
-    // const translateXToLastSymbol =
-    //   (SymbolsContainer.symbolWidth / 2 + this.spacing) * this.container1.list.length +
-    //   SymbolsContainer.symbolWidth / 2;
 
-    // this.container1.setX(this.container1.x - translateXToLastSymbol);
+    const distanceBetweenFirstAndLastSymbol =
+      (SymbolsContainer.symbolHeight + SlotMachineReel.verticalSpacing) *
+      (this.container1.list.length - 1);
+
+    this.container1.setY(this.container1.y - distanceBetweenFirstAndLastSymbol);
 
     this.container2.placeAboveOf(this.container1);
   }
