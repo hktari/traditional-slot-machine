@@ -121,7 +121,9 @@ export class SlotMachineReel extends GameObjects.GameObject {
   }
 
   stopAnimationAndDisplayResult() {
-    this.scene.tweens.killAll();
+    this.scene.tweens
+      .getTweensOf([this.container1, this.container2])
+      .forEach((tween) => tween.stop());
 
     /**
      * Aligns the containers. The spacing after animation the animation finishes is not correct
@@ -183,7 +185,7 @@ export class SlotMachineReel extends GameObjects.GameObject {
     );
     return this.scene.tweens.add({
       targets: container,
-      x: "+=" + distanceBetweenSymbolAndPayline,
+      y: "+=" + distanceBetweenSymbolAndPayline,
       duration: durationUntilSymbolReachesPayline,
       ease: "linear",
     });
