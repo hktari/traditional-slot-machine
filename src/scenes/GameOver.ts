@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import IndicatorLine from "../gameObjects/IndicatorLine";
 
 export class GameOver extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
@@ -13,6 +14,7 @@ export class GameOver extends Scene {
   container2: Phaser.GameObjects.Container;
 
   private readonly symbolWidth = 100;
+  payLine: IndicatorLine;
 
   constructor() {
     super("GameOver");
@@ -41,28 +43,8 @@ export class GameOver extends Scene {
     this.background = this.add.image(512, 384, "background");
     this.background.setAlpha(0.5);
 
-    const crossingLineHeight = this.symbolWidth;
-
-    this.finishLine = this.add.rectangle(
-      (this.camera.width * 5) / 8,
-      384,
-      (this.camera.width * 3) / 8,
-      crossingLineHeight,
-      0x000000,
-      1
-    );
-    this.finishLine.setOrigin(0, 0.5);
-
-    this.startLine = this.add.rectangle(
-      0,
-      384,
-      (this.camera.width * 3) / 8,
-      crossingLineHeight,
-      0x000000,
-      1
-    );
-
-    this.startLine.setOrigin(0, 0.5);
+    this.createIndicatorLines();
+    this.createSlit();
 
     this.container1 = this.createContainerWithSymbols(
       this.startLine.getBounds().right + this.symbolWidth / 2,
@@ -78,8 +60,8 @@ export class GameOver extends Scene {
 
     const speed = 3;
 
-    // this.startLine.setToTop();
-    // this.finishLine.setToTop();
+    this.startLine.setToTop();
+    this.finishLine.setToTop();
 
     this.redrawDebugGraphics();
 
@@ -90,8 +72,40 @@ export class GameOver extends Scene {
       }
     });
   }
+  createSlit() {
+    const slitLeftPart = this.add.rectangle(
+      0,
+      this.camera.height / 2,
+      this.camera.width / 2 - this.symbolWidth / 2,
+      this.symbolWidth,
+      0x000000
+    );
+    slitLeftPart.setOrigin(0, 0.5);
+    const slitRightPart = this.add.rectangle(
+      this.camera.width / 2 + this.symbolWidth / 2,
+      this.camera.height / 2,
+      this.camera.width / 2 - this.symbolWidth / 2,
+      this.symbolWidth,
+      0x000000
+    );
+    slitRightPart.setOrigin(0, 0.5);
+  }
 
   private debugGraphics: Phaser.GameObjects.Graphics[] = [];
+
+  private createIndicatorLines() {
+    const indicatorLinesY = 384;
+    this.startLine = new IndicatorLine(this, 0, indicatorLinesY);
+    this.finishLine = new IndicatorLine(
+      this,
+      this.camera.width,
+      indicatorLinesY
+    );
+
+    const centerPointX =
+      (this.finishLine.x - this.startLine.x) / 2 + this.startLine.x;
+    this.payLine = new IndicatorLine(this, centerPointX, indicatorLinesY);
+  }
 
   alignContainers() {
     const leftMostContainer = this.getLeftMostContainer();
