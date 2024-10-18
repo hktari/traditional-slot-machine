@@ -33,7 +33,6 @@ export class SlotMachineReel extends GameObjects.Container {
   ) {
     super(scene, x, y);
 
-
     const graphics = scene.add.graphics();
     graphics.lineStyle(2, 0xff22ff);
     graphics.strokeRect(
@@ -44,7 +43,6 @@ export class SlotMachineReel extends GameObjects.Container {
     );
     graphics.setDepth(2000);
     this.add(graphics);
-
 
     this.container1 = new SymbolsContainer(
       scene,
@@ -66,7 +64,7 @@ export class SlotMachineReel extends GameObjects.Container {
     this.add(this.container2);
 
     this.createIndicatorLines();
-    // this.setContainerInitialPositions();
+    this.setContainerInitialPositions();
 
     scene.add.existing(this);
   }
@@ -87,8 +85,6 @@ export class SlotMachineReel extends GameObjects.Container {
       width,
       height
     );
-    // this.startLine.setOrigin(0.5, 0);
-    // this.finishLine.setOrigin(0.5, 0);
 
     const centerPointY =
       (this.finishLine.y - this.startLine.y) / 2 + this.startLine.y;
@@ -99,6 +95,62 @@ export class SlotMachineReel extends GameObjects.Container {
       width,
       height
     );
+  }
+
+  private spinCounter = 0;
+  private spinCountMax = 11;
+
+  animateContainerToFinishLine(container: SymbolsContainer, speed: number) {
+    const distanceToFinishLine =
+      this.finishLine.getBounds().bottom -
+      container.getBounds().bottom +
+      SlotMachineReel.symbolHeight / 2;
+
+    const duration = Math.round(distanceToFinishLine / speed);
+
+    // TODO: reuse tween
+    this.scene.tweens.add({
+      targets: container,
+      y: "+=" + distanceToFinishLine,
+      duration,
+      ease: "linear",
+      // TODO: extract onComplete
+      onComplete: () => {
+        this.spinCounter++;
+        if (this.spinCounter >= this.spinCountMax) {
+          this.stopAnimationAndDisplayResult();
+        } else {
+          const containerAbove = this.getTopMostContainer();
+          container.placeBehindOf(containerAbove);
+
+          this.animateContainerToFinishLine(container, speed);
+        }
+      },
+    });
+  }
+
+  stopAnimationAndDisplayResult() {
+    this.scene.tweens.killAll();
+
+    // /**
+    //  * Aligns the containers. The spacing after animation the animation finishes is not correct
+    //  */
+    // this.placeContainerBehindOther(
+    //   this.getLeftMostContainer(),
+    //   this.getRightMostContainer()
+    // );
+
+    // const randomSymbol = Phaser.Math.RND.pick(this.symbols);
+    // this.animateContainerToSymbol(this.getLeftMostContainer(), randomSymbol);
+
+    // this.placeContainerInfrontOfOther(
+    //   this.getRightMostContainer(),
+    //   this.getLeftMostContainer()
+    // );
+
+    // this.spinCounter = 0;
+    // // After the animation has stopped. The spacing between the containers is not correct
+    // this.redrawDebugOutlines();
   }
 
   setContainerInitialPositions() {
@@ -136,20 +188,5 @@ export class SlotMachineReel extends GameObjects.Container {
       this.container2.getBounds().bottom
       ? this.container1
       : this.container2;
-  }
-
-  private _addSymbols(
-    container: GameObjects.Container,
-    symbols: string[],
-    scene: Scene
-  ) {
-    let y = 0;
-    const symbolsCount = symbols.length;
-    for (let i = 0; i < symbolsCount; i++) {
-      const spacing = i === 0 ? 0 : SlotMachineReel.verticalSpacing;
-      y = i * (SlotMachineReel.symbolHeight + spacing);
-      const symbol = scene.add.image(0, y, symbols[i]);
-      container.add(symbol);
-    }
   }
 }
