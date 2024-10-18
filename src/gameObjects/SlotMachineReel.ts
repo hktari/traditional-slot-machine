@@ -88,14 +88,11 @@ export class SlotMachineReel extends GameObjects.GameObject {
     );
   }
 
-  private spinCounter = 0;
-  private spinCountMax = 11;
+  private revolutionsCount = 0;
 
   animateContainerToFinishLine(container: SymbolsContainer, speed: number) {
     const distanceToFinishLine = Math.abs(
-      this.finishLine.getBounds().bottom -
-        container.getBounds().top +
-        SlotMachineReel.symbolHeight / 2
+      this.finishLine.getBounds().bottom - container.y
     );
 
     const duration = Math.round(distanceToFinishLine / speed);
@@ -108,8 +105,10 @@ export class SlotMachineReel extends GameObjects.GameObject {
       ease: "linear",
       // TODO: extract onComplete
       onComplete: () => {
-        this.spinCounter++;
-        if (this.spinCounter >= this.spinCountMax) {
+        this.revolutionsCount++;
+        if (
+          this.revolutionsCount >= this.animationPreferences.revolutionsCount
+        ) {
           this.stopAnimationAndDisplayResult();
         } else {
           const containerAbove = this.getTopMostContainer();
@@ -127,17 +126,14 @@ export class SlotMachineReel extends GameObjects.GameObject {
     /**
      * Aligns the containers. The spacing after animation the animation finishes is not correct
      */
-    this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
+    this.getBottomMostContainer().placeBelowOf(this.getTopMostContainer());
 
-    // const randomSymbol = Phaser.Math.RND.pick(this.symbols);
-    // this.animateContainerToSymbol(this.getLeftMostContainer(), randomSymbol);
+    // // const randomSymbol = Phaser.Math.RND.pick(this.symbols);
+    // this.animateContainerToSymbol(this.getBottomMostContainer(), "slotSymbol1");
 
-    // this.placeContainerInfrontOfOther(
-    //   this.getRightMostContainer(),
-    //   this.getLeftMostContainer()
-    // );
+    // this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
 
-    this.spinCounter = 0;
+    this.revolutionsCount = 0;
     // // After the animation has stopped. The spacing between the containers is not correct
     this.debugUtils.redrawDebugOutlines();
   }
