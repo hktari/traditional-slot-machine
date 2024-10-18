@@ -19,8 +19,8 @@ export class Game extends Scene {
   slotMachineReelsBackground: SlotMachineReelBackground;
 
   spinAnimationPreferences = {
-    speed: 3,
-    revolutionsCount: 30,
+    speed: 0.3,
+    revolutionsCount: 3,
   };
 
   get isSpinning(): boolean {

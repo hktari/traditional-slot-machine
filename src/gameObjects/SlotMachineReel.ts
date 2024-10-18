@@ -140,7 +140,7 @@ export class SlotMachineReel extends GameObjects.GameObject {
     // // After the animation has stopped. The spacing between the containers is not correct
     this.debugUtils.redrawDebugOutlines();
   }
-
+  
   setContainerInitialPositions() {
     // Align first image with payline
     this.container1.setX(this.payLine.x);
@@ -152,6 +152,43 @@ export class SlotMachineReel extends GameObjects.GameObject {
     // this.container1.setX(this.container1.x - translateXToLastSymbol);
 
     this.container2.placeAboveOf(this.container1);
+  }
+  animateContainerToSymbol(
+    container: Phaser.GameObjects.Container,
+    symbolName: string
+  ) {
+    const symbolPosition = container.list.indexOf(
+      container.list.find(
+        (child): child is Phaser.GameObjects.Image =>
+          (child as Phaser.GameObjects.Image).texture.key === symbolName
+      )!
+    );
+
+    if (symbolPosition === -1) {
+      throw new Error("Symbol not found. Make sure the symbolName is correct");
+    }
+
+    const currentSymbolAtPaylinePosition = container.list.length - 1;
+
+    const numberOfPlacesToPayline = Math.abs(
+      symbolPosition - currentSymbolAtPaylinePosition
+    );
+
+    const distanceBetweenSymbolAndPayline =
+      numberOfPlacesToPayline *
+      (SlotMachineReel.symbolWidth + SlotMachineReel.verticalSpacing);
+
+    const durationUntilSymbolReachesPayline = Math.abs(
+      Math.round(
+        distanceBetweenSymbolAndPayline / this.animationPreferences.speed
+      )
+    );
+    return this.scene.tweens.add({
+      targets: container,
+      x: "+=" + distanceBetweenSymbolAndPayline,
+      duration: durationUntilSymbolReachesPayline,
+      ease: "linear",
+    });
   }
 
   isSpinning() {
