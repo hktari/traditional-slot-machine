@@ -68,8 +68,8 @@ export class GameOver extends Scene {
 
     this.input.on("pointerdown", () => {
       if (!this.isSpinning()) {
-        this.animateXToFinishLine(this.container1, this.animationSpeed);
-        this.animateXToFinishLine(this.container2, this.animationSpeed);
+        this.animateContainerToFinishLine(this.container1, this.animationSpeed);
+        this.animateContainerToFinishLine(this.container2, this.animationSpeed);
       }
     });
   }
@@ -200,9 +200,10 @@ export class GameOver extends Scene {
     );
   }
 
-  private spinnerStopTimer: Phaser.Time.TimerEvent | null = null;
-
-  animateXToFinishLine(container: Phaser.GameObjects.Container, speed: number) {
+  animateContainerToFinishLine(
+    container: Phaser.GameObjects.Container,
+    speed: number
+  ) {
     const distanceToFinishLine =
       this.finishLine.getBounds().left -
       container.getBounds().left +
@@ -219,30 +220,27 @@ export class GameOver extends Scene {
       // TODO: extract onComplete
       onComplete: () => {
         this.spinCounter++;
-        if (this.spinCounter >= this.spinCountMax && !this.spinnerStopTimer) {
-          // const randomDelay = Phaser.Math.Between(1000, 3000);
-          // this.spinnerStopTimer = this.time.delayedCall(randomDelay, () => {
+        if (this.spinCounter >= this.spinCountMax) {
           this.stopAnimationAndDisplayResult();
-          // });
         } else {
           const containerBehind = this.getLeftMostContainer();
           this.placeContainerBehindOther(container, containerBehind);
 
-          this.animateXToFinishLine(container, speed);
+          this.animateContainerToFinishLine(container, speed);
         }
       },
     });
   }
+
   stopAnimationAndDisplayResult() {
     this.tweens.killAll();
 
     this.alignContainers();
-    this.animateContainerToSymbol(this.getLeftMostContainer(), "slotSymbol4");
-    // this.alignContainers();
+    const randomSymbol = Phaser.Math.RND.pick(this.symbols);
+    this.animateContainerToSymbol(this.getLeftMostContainer(), randomSymbol);
+    this.alignContainers();
 
     this.spinCounter = 0;
-    // TODO: needed ?
-    this.spinnerStopTimer = null;
     // After the animation has stopped. The spacing between the containers is not correct
     this.redrawDebugOutlines();
   }
