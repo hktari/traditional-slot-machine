@@ -64,6 +64,7 @@ export class GameOver extends Scene {
 
     const speed = 3;
 
+    // TODO: refactor
     this.slit.forEach((slit) => slit.setToTop());
     [this.startLine, this.finishLine, this.payLine].forEach((line) =>
       line.setToTop()
@@ -191,7 +192,7 @@ export class GameOver extends Scene {
 
   animateXToFinishLine(container: Phaser.GameObjects.Container, speed: number) {
     const distance =
-      this.finishLine.getBounds().left - container.getBounds().left;
+      this.finishLine.getBounds().left - container.getBounds().left + this.symbolWidth / 2;
     const duration = Math.round(distance / speed);
 
     // TODO: reuse tween
@@ -203,19 +204,19 @@ export class GameOver extends Scene {
       onComplete: () => {
         this.spinCounter++;
         if (this.spinCounter >= this.spinCountMax && !this.spinnerStopTimer) {
-          const randomDelay = Phaser.Math.Between(1000, 3000);
-          this.spinnerStopTimer = this.time.delayedCall(randomDelay, () => {
-            this.stopSpinner();
-            this.spinCounter = 0;
-            this.spinnerStopTimer = null;
-            this.alignContainers();
-            this.redrawDebugGraphics();
-          });
+          // const randomDelay = Phaser.Math.Between(1000, 3000);
+          // this.spinnerStopTimer = this.time.delayedCall(randomDelay, () => {
+          this.stopSpinner();
+          this.spinCounter = 0;
+          this.spinnerStopTimer = null;
+          this.alignContainers();
+          this.redrawDebugGraphics();
+          // });
+        } else {
+          this.placeContainerBehindOther(container);
+
+          this.animateXToFinishLine(container, speed);
         }
-
-        this.placeContainerBehindOther(container);
-
-        this.animateXToFinishLine(container, speed);
       },
     });
   }
