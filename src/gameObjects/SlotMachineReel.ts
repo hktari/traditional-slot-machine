@@ -1,13 +1,14 @@
 import { GameObjects, Scene } from "phaser";
 import IndicatorLine from "./IndicatorLine";
 import SymbolsContainer from "./SymbolsContainer";
+import { DebugUtils } from "../utils/DebugUtils";
 
 export interface SlotMachineReelAnimationPreferences {
   revolutionsCount: number;
   speed: number;
 }
 
-export class SlotMachineReel extends GameObjects.Container {
+export class SlotMachineReel extends GameObjects.GameObject {
   static symbolWidth = 96;
   //   TODO: check if correct
   static symbolHeight = 100;
@@ -18,50 +19,40 @@ export class SlotMachineReel extends GameObjects.Container {
 
   static verticalSpacing = 30;
 
-  container1: Phaser.GameObjects.Container;
-  container2: Phaser.GameObjects.Container;
+  container1: SymbolsContainer;
+  container2: SymbolsContainer;
   finishLine: IndicatorLine;
   startLine: IndicatorLine;
   payLine: IndicatorLine;
 
+  private readonly debugUtils: DebugUtils;
   constructor(
     scene: Scene,
-    x: number,
-    y: number,
+    private x: number,
+    private y: number,
     private symbols: string[],
     private animationPreferences: SlotMachineReelAnimationPreferences
   ) {
-    super(scene, x, y);
+    super(scene, "SlotMachineReel");
 
-    const graphics = scene.add.graphics();
-    graphics.lineStyle(2, 0xff22ff);
-    graphics.strokeRect(
-      -SlotMachineReel.reelWidth / 2,
-      -SlotMachineReel.reelHeight / 2,
-      SlotMachineReel.reelWidth,
-      SlotMachineReel.reelHeight
-    );
-    graphics.setDepth(2000);
-    this.add(graphics);
+    this.debugUtils = DebugUtils.getInstance(scene);
 
     this.container1 = new SymbolsContainer(
       scene,
-      0,
-      0,
+      x,
+      y,
       SlotMachineReel.verticalSpacing,
       symbols,
       animationPreferences
     );
     this.container2 = new SymbolsContainer(
       scene,
-      0,
-      0,
+      x,
+      y,
       SlotMachineReel.verticalSpacing,
       symbols,
       animationPreferences
     );
-    this.add(this.container1);
-    this.add(this.container2);
 
     this.createIndicatorLines();
     this.setContainerInitialPositions();
@@ -121,7 +112,7 @@ export class SlotMachineReel extends GameObjects.Container {
           this.stopAnimationAndDisplayResult();
         } else {
           const containerAbove = this.getTopMostContainer();
-          container.placeBehindOf(containerAbove);
+          container.placeAboveOf(containerAbove);
 
           this.animateContainerToFinishLine(container, speed);
         }
@@ -132,13 +123,10 @@ export class SlotMachineReel extends GameObjects.Container {
   stopAnimationAndDisplayResult() {
     this.scene.tweens.killAll();
 
-    // /**
-    //  * Aligns the containers. The spacing after animation the animation finishes is not correct
-    //  */
-    // this.placeContainerBehindOther(
-    //   this.getLeftMostContainer(),
-    //   this.getRightMostContainer()
-    // );
+    /**
+     * Aligns the containers. The spacing after animation the animation finishes is not correct
+     */
+    this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
 
     // const randomSymbol = Phaser.Math.RND.pick(this.symbols);
     // this.animateContainerToSymbol(this.getLeftMostContainer(), randomSymbol);
@@ -148,9 +136,9 @@ export class SlotMachineReel extends GameObjects.Container {
     //   this.getLeftMostContainer()
     // );
 
-    // this.spinCounter = 0;
+    this.spinCounter = 0;
     // // After the animation has stopped. The spacing between the containers is not correct
-    // this.redrawDebugOutlines();
+    this.debugUtils.redrawDebugOutlines();
   }
 
   setContainerInitialPositions() {
@@ -163,7 +151,7 @@ export class SlotMachineReel extends GameObjects.Container {
 
     // this.container1.setX(this.container1.x - translateXToLastSymbol);
 
-    // this.placeContainerInfrontOfOther(this.container2, this.container1);
+    this.container2.placeAboveOf(this.container1);
   }
 
   isSpinning() {
@@ -174,7 +162,16 @@ export class SlotMachineReel extends GameObjects.Container {
   }
 
   spin(resultSymbol?: string): Promise<string> {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve) => {
+      this.animateContainerToFinishLine(
+        this.container1,
+        this.animationPreferences.speed
+      );
+      this.animateContainerToFinishLine(
+        this.container2,
+        this.animationPreferences.speed
+      );
+    });
   }
 
   getTopMostContainer() {
