@@ -65,4 +65,19 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
       ease: "linear",
     });
   }
+
+  placeInFrontOf(other: Phaser.GameObjects.Container) {
+    this.setX(other.getBounds().right + this.spacing + this.symbolWidth / 2);
+    this.setY(other.y);
+  }
+
+  placeBehindOf(other: Phaser.GameObjects.Container) {
+    this.setX(
+      other.getBounds().left -
+        this.getBounds().width +
+        this.symbolWidth / 2 -
+        this.spacing
+    );
+    this.setY(other.y);
+  }
 }
