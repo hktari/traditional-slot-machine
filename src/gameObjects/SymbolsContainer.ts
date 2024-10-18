@@ -14,7 +14,7 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
   ) {
     super(scene, x, y);
 
-    this.addSymbols(symbols);
+    this.add(this.scene.add.image(x, y, "slotSymbol1"));
 
     scene.add.existing(this);
   }
@@ -67,7 +67,9 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
   }
 
   placeInFrontOf(other: Phaser.GameObjects.Container) {
-    this.setX(other.getBounds().right + this.spacing + SymbolsContainer.symbolWidth / 2);
+    this.setX(
+      other.getBounds().right + this.spacing + SymbolsContainer.symbolWidth / 2
+    );
     this.setY(other.y);
   }
 
@@ -75,7 +77,7 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
     this.setX(
       other.getBounds().left -
         this.getBounds().width +
-        this.symbolWidth / 2 -
+        SymbolsContainer.symbolWidth / 2 -
         this.spacing
     );
     this.setY(other.y);
