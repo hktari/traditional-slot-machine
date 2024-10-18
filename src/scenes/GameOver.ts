@@ -121,16 +121,6 @@ export class GameOver extends Scene {
     this.payLine = new IndicatorLine(this, centerPointX, y);
   }
 
-  /**
-   * Aligns the containers so that the leftmost container is placed behind the rightmost container
-   */
-  alignContainers() {
-    this.placeContainerBehindOther(
-      this.getLeftMostContainer(),
-      this.getRightMostContainer()
-    );
-  }
-
   redrawDebugOutlines() {
     this.debugGraphics.forEach((graphic) => graphic.destroy());
     this.debugGraphics = [];
@@ -234,11 +224,22 @@ export class GameOver extends Scene {
 
   stopAnimationAndDisplayResult() {
     this.tweens.killAll();
+    
+    /**
+     * Aligns the containers. The spacing after animation the animation finishes is not correct
+     */
+    this.placeContainerBehindOther(
+      this.getLeftMostContainer(),
+      this.getRightMostContainer()
+    );
 
-    this.alignContainers();
     const randomSymbol = Phaser.Math.RND.pick(this.symbols);
     this.animateContainerToSymbol(this.getLeftMostContainer(), randomSymbol);
-    this.alignContainers();
+
+    this.placeContainerInfrontOfOther(
+      this.getRightMostContainer(),
+      this.getLeftMostContainer()
+    );
 
     this.spinCounter = 0;
     // After the animation has stopped. The spacing between the containers is not correct
