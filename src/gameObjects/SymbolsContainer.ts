@@ -29,7 +29,7 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
     for (let i = 0; i < symbolsCount; i++) {
       const symbol = this.scene.add.image(
         0,
-        i * (SymbolsContainer.symbolWidth + this.spacing),
+        i * (SymbolsContainer.symbolHeight + this.spacing),
         symbols[i]
       );
       this.add(symbol);
@@ -56,7 +56,7 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
     );
 
     const distanceBetweenSymbolAndPayline =
-      numberOfPlacesToPayline * (SymbolsContainer.symbolWidth + this.spacing);
+      numberOfPlacesToPayline * (SymbolsContainer.symbolHeight + this.spacing);
 
     const durationUntilSymbolReachesPayline = Math.abs(
       Math.round(
@@ -76,7 +76,7 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
     this.setY(
       other.getBounds().top -
         this.getBounds().height +
-        SymbolsContainer.symbolWidth / 2 -
+        SymbolsContainer.symbolHeight / 2 -
         this.spacing
     );
   }
@@ -86,7 +86,7 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
     this.setY(
       other.getBounds().bottom +
         this.getBounds().height -
-        SymbolsContainer.symbolWidth / 2 +
+        SymbolsContainer.symbolHeight / 2 +
         this.spacing
     );
   }
