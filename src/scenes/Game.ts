@@ -85,7 +85,7 @@ export class Game extends Scene {
 
     const offsetXToCenter = 5;
     const distanceBetweennReels = 130;
-    const offsetYToCenter = 35;
+    const offsetYToCenter = 39;
 
     const reelOffsetX = distanceBetweennReels * -1 + offsetXToCenter;
 
@@ -126,26 +126,37 @@ export class Game extends Scene {
   redrawDebugOutlines() {
     this.debugGraphics.forEach((graphic) => graphic.destroy());
     this.debugGraphics = [];
-    const containerColor = 0x00ff00;
-    const symbolColor = 0xff00ff;
 
     this.slotMachineReels.forEach((container) => {
-      this.drawDebugOutlinesForContainer(containerColor, container);
-      container.list.forEach((child) => {
-        this.drawDebugOutlinesForContainer(
-          symbolColor,
-          child as Phaser.GameObjects.Container
-        );
-      });
+      this.drawDebugOutlinesForContainerRecursively(container, 5);
     });
   }
 
-  private drawDebugOutlinesForContainer(
-    color: number,
-    gameObject: Phaser.GameObjects.Container
+  private drawDebugOutlinesForContainerRecursively(
+    gameObject: Phaser.GameObjects.Container,
+    depth: number
   ) {
+    if (depth <= 0) {
+      return;
+    }
+
+    const imageColor = 0xffaa33;
+    const containerColorsByDepth = [
+      0xff0000, 0x00ff00, 0x0000ff, 0xff00ff, 0xffff00, 0x00ffff,
+    ];
+    const color = containerColorsByDepth[depth - 1];
+
     const bounds = gameObject.getBounds();
-    return this.drawDebug(color, bounds);
+    this.drawDebug(color, bounds);
+
+    gameObject.list.forEach((child) => {
+      if (child instanceof Phaser.GameObjects.Container) {
+        this.drawDebugOutlinesForContainerRecursively(child, depth - 1);
+      } else if (child instanceof Phaser.GameObjects.Image) {
+        const childBounds = child.getBounds();
+        this.drawDebug(imageColor, childBounds);
+      }
+    });
   }
 
   private drawDebug(color: number, bounds: Phaser.Geom.Rectangle) {
