@@ -15,6 +15,7 @@ export class GameOver extends Scene {
 
   private readonly symbolWidth = 100;
   payLine: IndicatorLine;
+  animationSpeed: number;
 
   constructor() {
     super("GameOver");
@@ -51,11 +52,11 @@ export class GameOver extends Scene {
     );
 
     this.container1 = this.createContainerWithSymbols(0, 0);
-
     this.container2 = this.createContainerWithSymbols(0, 0);
+
     this.setContainerInitialPositions();
 
-    const speed = 3;
+    this.animationSpeed = 3;
 
     // TODO: refactor
     this.slit.forEach((slit) => slit.setToTop());
@@ -67,8 +68,8 @@ export class GameOver extends Scene {
 
     this.input.on("pointerdown", () => {
       if (!this.isSpinning()) {
-        this.animateXToFinishLine(this.container1, speed);
-        this.animateXToFinishLine(this.container2, speed);
+        this.animateXToFinishLine(this.container1, this.animationSpeed);
+        this.animateXToFinishLine(this.container2, this.animationSpeed);
       }
     });
   }
@@ -203,7 +204,9 @@ export class GameOver extends Scene {
 
   animateXToFinishLine(container: Phaser.GameObjects.Container, speed: number) {
     const distanceToFinishLine =
-      this.finishLine.getBounds().left - container.getBounds().left + this.symbolWidth / 2;
+      this.finishLine.getBounds().left -
+      container.getBounds().left +
+      this.symbolWidth / 2;
 
     const duration = Math.round(distanceToFinishLine / speed);
 
@@ -231,20 +234,42 @@ export class GameOver extends Scene {
     });
   }
   stopAnimationAndDisplayResult() {
-    this.stopAnimations();
+    this.tweens.killAll();
+
+    this.alignContainers();
+    this.animateContainerToSymbol(this.getLeftMostContainer(), "slotSymbol1");
+    // this.alignContainers();
+
     this.spinCounter = 0;
     // TODO: needed ?
     this.spinnerStopTimer = null;
     // After the animation has stopped. The spacing between the containers is not correct
-    this.alignContainers();
     this.redrawDebugOutlines();
   }
-  stopAnimations() {
-    // TODO: forward animation so that the image center aligns with the payline
+  animateContainerToSymbol(
+    container: Phaser.GameObjects.Container,
+    symbolName: string
+  ) {
+    const symbol = container.list.find(
+      (child) => (child as Phaser.GameObjects.Image).texture.key === symbolName
+    ) as Phaser.GameObjects.Image;
+    if (!symbol) {
+      throw new Error("Symbol not found. Make sure the symbolName is correct");
+    }
+    const distanceBetweenSymbolAndPayline = Math.abs(
+      this.payLine.x - symbol.getCenter().x
+    );
 
-    this.tweens.killAll();
+    const durationUntilSymbolReachesPayline = Math.abs(
+      Math.round(distanceBetweenSymbolAndPayline / this.animationSpeed)
+    );
+    this.tweens.add({
+      targets: container,
+      x: "+=" + distanceBetweenSymbolAndPayline,
+      duration: durationUntilSymbolReachesPayline,
+      ease: "linear",
+    });
   }
-
   setContainerInitialPositions() {
     // Align first image with payline
     this.container1.setX(this.payLine.x);
