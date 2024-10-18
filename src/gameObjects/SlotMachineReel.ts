@@ -131,23 +131,18 @@ export class SlotMachineReel extends GameObjects.GameObject {
       .getTweensOf([this.container1, this.container2])
       .forEach((tween) => tween.stop());
 
-    /**
-     * Aligns the containers. The spacing after animation the animation finishes is not correct
-     */
-    // this.getBottomMostContainer().placeBelowOf(this.getTopMostContainer());
-
-    // // const randomSymbol = Phaser.Math.RND.pick(this.symbols);
     // TODO: refactor
     this.animateContainerToSymbol(
       this.getBottomMostContainer(),
       this.spinResultSymbol!
     );
 
-    // this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
+    this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
 
     this.revolutionsCount = 0;
     // // After the animation has stopped. The spacing between the containers is not correct
     this.debugUtils.redrawDebugOutlines();
+
     // TODO: refactor
     this.resolveIsSpinningPromise?.("ok");
     this.resolveIsSpinningPromise = undefined;
@@ -191,7 +186,7 @@ export class SlotMachineReel extends GameObjects.GameObject {
       y: "+=" + distanceBetweenSymbolAndPayline,
       duration: durationUntilSymbolReachesPayline,
       ease: "Elastic",
-      easeParams: [1.5, 0.5],
+      easeParams: [1.5, 1],
     });
   }
 
