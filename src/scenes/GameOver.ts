@@ -62,6 +62,7 @@ export class GameOver extends Scene {
 
     this.startLine.setToTop();
     this.finishLine.setToTop();
+    this.slit.forEach((slit) => slit.setToTop());
 
     this.redrawDebugGraphics();
 
@@ -72,6 +73,9 @@ export class GameOver extends Scene {
       }
     });
   }
+
+  private slit: Phaser.GameObjects.Rectangle[] = [];
+
   createSlit() {
     const slitLeftPart = this.add.rectangle(
       0,
@@ -89,12 +93,14 @@ export class GameOver extends Scene {
       0x000000
     );
     slitRightPart.setOrigin(0, 0.5);
+    this.slit.push(slitLeftPart);
+    this.slit.push(slitRightPart);
   }
 
   private debugGraphics: Phaser.GameObjects.Graphics[] = [];
 
   private createIndicatorLines() {
-    const indicatorLinesY = 384;
+    const indicatorLinesY = this.camera.height / 2;
     this.startLine = new IndicatorLine(this, 0, indicatorLinesY);
     this.finishLine = new IndicatorLine(
       this,
