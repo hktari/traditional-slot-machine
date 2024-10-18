@@ -26,6 +26,7 @@ export class SlotMachineReel extends GameObjects.GameObject {
   payLine: IndicatorLine;
 
   private readonly debugUtils: DebugUtils;
+  spinResultSymbol: string | undefined;
   constructor(
     scene: Scene,
     private x: number,
@@ -90,6 +91,10 @@ export class SlotMachineReel extends GameObjects.GameObject {
 
   private revolutionsCount = 0;
 
+  private resolveIsSpinningPromise?: (
+    value: string | PromiseLike<string>
+  ) => void;
+
   animateContainerToFinishLine(container: SymbolsContainer, speed: number) {
     const distanceToFinishLine = Math.abs(
       this.finishLine.getBounds().bottom -
@@ -139,6 +144,9 @@ export class SlotMachineReel extends GameObjects.GameObject {
     this.revolutionsCount = 0;
     // // After the animation has stopped. The spacing between the containers is not correct
     this.debugUtils.redrawDebugOutlines();
+    // TODO: refactor
+    this.resolveIsSpinningPromise?.("ok");
+    this.resolveIsSpinningPromise = undefined;
   }
 
   setContainerInitialPositions() {
@@ -200,7 +208,13 @@ export class SlotMachineReel extends GameObjects.GameObject {
   }
 
   spin(resultSymbol?: string): Promise<string> {
+    if (this.resolveIsSpinningPromise) {
+      throw new Error("Already spinning");
+    }
+
     return new Promise((resolve) => {
+      this.spinResultSymbol = resultSymbol;
+      this.resolveIsSpinningPromise = resolve;
       this.animateContainerToFinishLine(
         this.container1,
         this.animationPreferences.speed
