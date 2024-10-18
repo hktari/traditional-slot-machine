@@ -138,7 +138,10 @@ export class SlotMachineReel extends GameObjects.GameObject {
 
     // // const randomSymbol = Phaser.Math.RND.pick(this.symbols);
     // TODO: refactor
-    this.animateContainerToSymbol(this.getBottomMostContainer(), this.spinResultSymbol!);
+    this.animateContainerToSymbol(
+      this.getBottomMostContainer(),
+      this.spinResultSymbol!
+    );
 
     // this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
 
@@ -167,37 +170,28 @@ export class SlotMachineReel extends GameObjects.GameObject {
     container: Phaser.GameObjects.Container,
     symbolName: string
   ) {
-    const symbolPosition = container.list.indexOf(
-      container.list.find(
-        (child): child is Phaser.GameObjects.Image =>
-          (child as Phaser.GameObjects.Image).texture.key === symbolName
-      )!
+    const symbol = container.list.find(
+      (child): child is Phaser.GameObjects.Image =>
+        (child as Phaser.GameObjects.Image).texture.key === symbolName
     );
 
-    if (symbolPosition === -1) {
+    if (!symbol) {
       throw new Error("Symbol not found. Make sure the symbolName is correct");
     }
 
-    const currentSymbolAtPaylinePosition = container.list.length - 1;
-
-    const numberOfPlacesToPayline = Math.abs(
-      symbolPosition - currentSymbolAtPaylinePosition
-    );
-
     const distanceBetweenSymbolAndPayline =
-      numberOfPlacesToPayline *
-      (SlotMachineReel.symbolWidth + SlotMachineReel.verticalSpacing);
+      this.payLine.y - symbol.y + SlotMachineReel.symbolHeight / 2;
 
-    const durationUntilSymbolReachesPayline = Math.abs(
-      Math.round(
-        distanceBetweenSymbolAndPayline / this.animationPreferences.speed
-      )
+    const durationUntilSymbolReachesPayline = Math.round(
+      Math.abs(distanceBetweenSymbolAndPayline) /
+        this.animationPreferences.speed
     );
     return this.scene.tweens.add({
       targets: container,
       y: "+=" + distanceBetweenSymbolAndPayline,
       duration: durationUntilSymbolReachesPayline,
-      ease: "linear",
+      ease: "Elastic",
+      easeParams: [1.5, 0.5],
     });
   }
 
