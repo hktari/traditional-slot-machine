@@ -43,8 +43,12 @@ export class GameOver extends Scene {
     this.background = this.add.image(512, 384, "background");
     this.background.setAlpha(0.5);
 
-    this.createIndicatorLines();
-    this.createSlit();
+    this.createSlit(
+      this.camera.width / 2,
+      this.camera.height / 2,
+      this.symbolWidth,
+      100
+    );
 
     this.container1 = this.createContainerWithSymbols(
       this.startLine.getBounds().right + this.symbolWidth / 2,
@@ -60,9 +64,10 @@ export class GameOver extends Scene {
 
     const speed = 3;
 
-    this.startLine.setToTop();
-    this.finishLine.setToTop();
     this.slit.forEach((slit) => slit.setToTop());
+    [this.startLine, this.finishLine, this.payLine].forEach((line) =>
+      line.setToTop()
+    );
 
     this.redrawDebugGraphics();
 
@@ -76,41 +81,49 @@ export class GameOver extends Scene {
 
   private slit: Phaser.GameObjects.Rectangle[] = [];
 
-  createSlit() {
+  createSlit(x: number, y: number, width: number, height: number) {
     const slitLeftPart = this.add.rectangle(
       0,
-      this.camera.height / 2,
-      this.camera.width / 2 - this.symbolWidth / 2,
-      this.symbolWidth,
+      y,
+      x - width / 2,
+      height,
       0x000000
     );
     slitLeftPart.setOrigin(0, 0.5);
     const slitRightPart = this.add.rectangle(
-      this.camera.width / 2 + this.symbolWidth / 2,
-      this.camera.height / 2,
-      this.camera.width / 2 - this.symbolWidth / 2,
-      this.symbolWidth,
+      x + this.symbolWidth / 2,
+      y,
+      x - this.symbolWidth / 2,
+      height,
       0x000000
     );
     slitRightPart.setOrigin(0, 0.5);
     this.slit.push(slitLeftPart);
     this.slit.push(slitRightPart);
+
+    this.createIndicatorLines({
+      startX: slitLeftPart.getBounds().right,
+      finishX: slitRightPart.getBounds().left,
+      y,
+    });
   }
 
   private debugGraphics: Phaser.GameObjects.Graphics[] = [];
 
-  private createIndicatorLines() {
-    const indicatorLinesY = this.camera.height / 2;
-    this.startLine = new IndicatorLine(this, 0, indicatorLinesY);
-    this.finishLine = new IndicatorLine(
-      this,
-      this.camera.width,
-      indicatorLinesY
-    );
+  private createIndicatorLines({
+    startX,
+    finishX,
+    y,
+  }: {
+    startX: number;
+    finishX: number;
+    y: number;
+  }) {
+    this.startLine = new IndicatorLine(this, startX, y);
+    this.finishLine = new IndicatorLine(this, finishX, y);
 
-    const centerPointX =
-      (this.finishLine.x - this.startLine.x) / 2 + this.startLine.x;
-    this.payLine = new IndicatorLine(this, centerPointX, indicatorLinesY);
+    const centerPointX = (finishX - startX) / 2 + startX;
+    this.payLine = new IndicatorLine(this, centerPointX, y);
   }
 
   alignContainers() {
