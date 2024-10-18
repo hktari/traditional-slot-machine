@@ -149,9 +149,13 @@ export class GameOver extends Scene {
     color: number,
     gameObject: Phaser.GameObjects.Container
   ) {
+    const bounds = gameObject.getBounds();
+    return this.drawDebug(color, bounds);
+  }
+
+  private drawDebug(color: number, bounds: Phaser.Geom.Rectangle) {
     const graphics = this.add.graphics();
     graphics.lineStyle(2, color, 1);
-    const bounds = gameObject.getBounds();
     graphics.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
     this.debugGraphics.push(graphics);
     return graphics;
@@ -229,7 +233,7 @@ export class GameOver extends Scene {
     // TODO: needed ?
     this.spinnerStopTimer = null;
     // After the animation has stopped. The spacing between the containers is not correct
-    this.alignContainers();
+    // this.alignContainers();
     this.redrawDebugOutlines();
   }
   stopAnimations() {
@@ -246,9 +250,10 @@ export class GameOver extends Scene {
       this.container1.list.length - 1
     ) as Phaser.GameObjects.Image;
     const translate = this.payLine.x - rightMostSymbol.getCenter().x;
+    this.drawDebug(0xffffff, rightMostSymbol.getBounds());
     this.container1.setX(this.container1.x - translate);
 
-    // this.placeContainerBehindOther(this.container2);
+    this.placeContainerBehindOther(this.container2);
   }
 
   placeContainerBehindOther(container: Phaser.GameObjects.Container) {
