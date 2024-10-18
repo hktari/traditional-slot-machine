@@ -19,8 +19,8 @@ export class Game extends Scene {
   slotMachineReelsBackground: SlotMachineReelBackground;
 
   spinAnimationPreferences = {
-    speed: 0.3,
-    revolutionsCount: 3,
+    speed: 1.6,
+    revolutionsCount: 5,
   };
 
   get isSpinning(): boolean {
@@ -96,12 +96,20 @@ export class Game extends Scene {
     const leftReelY = this.cameras.main.centerY + offsetYToCenter;
 
     for (let i = 0; i < 3; i++) {
+      const revolutionsCountDifference = 1;
+      const spinAnimation = {
+        ...this.spinAnimationPreferences,
+        revolutionsCount:
+          this.spinAnimationPreferences.revolutionsCount +
+          i * revolutionsCountDifference,
+      };
+
       const reel = new SlotMachineReel(
         this,
         leftReelX + i * distanceBetweennReels,
         leftReelY,
         this.reelSymbols,
-        this.spinAnimationPreferences
+        spinAnimation
       );
       this.slotMachineReels.push(reel);
     }
