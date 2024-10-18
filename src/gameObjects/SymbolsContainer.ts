@@ -2,7 +2,7 @@ import IndicatorLine from "./IndicatorLine";
 import { SlotMachineReelAnimationPreferences } from "./SlotMachineReel";
 
 export default class SymbolsContainer extends Phaser.GameObjects.Container {
-  static symbolWidth: 100;
+  static symbolWidth: number = 100;
 
   constructor(
     scene: Phaser.Scene,
@@ -14,7 +14,7 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
   ) {
     super(scene, x, y);
 
-    this.add(this.scene.add.image(x, y, "slotSymbol1"));
+    this.addSymbols(symbols);
 
     scene.add.existing(this);
   }
