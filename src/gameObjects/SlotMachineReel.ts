@@ -92,7 +92,9 @@ export class SlotMachineReel extends GameObjects.GameObject {
 
   animateContainerToFinishLine(container: SymbolsContainer, speed: number) {
     const distanceToFinishLine = Math.abs(
-      this.finishLine.getBounds().bottom - container.y
+      this.finishLine.getBounds().bottom -
+        container.y +
+        SymbolsContainer.symbolHeight / 2
     );
 
     const duration = Math.round(distanceToFinishLine / speed);
@@ -106,14 +108,13 @@ export class SlotMachineReel extends GameObjects.GameObject {
       // TODO: extract onComplete
       onComplete: () => {
         this.revolutionsCount++;
+        const containerAbove = this.getTopMostContainer();
+        container.placeAboveOf(containerAbove);
         if (
           this.revolutionsCount >= this.animationPreferences.revolutionsCount
         ) {
           this.stopAnimationAndDisplayResult();
         } else {
-          const containerAbove = this.getTopMostContainer();
-          container.placeAboveOf(containerAbove);
-
           this.animateContainerToFinishLine(container, speed);
         }
       },
@@ -128,10 +129,10 @@ export class SlotMachineReel extends GameObjects.GameObject {
     /**
      * Aligns the containers. The spacing after animation the animation finishes is not correct
      */
-    this.getBottomMostContainer().placeBelowOf(this.getTopMostContainer());
+    // this.getBottomMostContainer().placeBelowOf(this.getTopMostContainer());
 
-    // const randomSymbol = Phaser.Math.RND.pick(this.symbols);
-    this.animateContainerToSymbol(this.getTopMostContainer(), "slotSymbol4");
+    // // const randomSymbol = Phaser.Math.RND.pick(this.symbols);
+    // this.animateContainerToSymbol(this.getTopMostContainer(), "slotSymbol4");
 
     // this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
 
