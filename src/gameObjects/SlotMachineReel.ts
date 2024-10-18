@@ -135,17 +135,17 @@ export class SlotMachineReel extends GameObjects.GameObject {
     this.animateContainerToSymbol(
       this.getBottomMostContainer(),
       this.spinResultSymbol!
-    );
+    ).on("complete", () => {
+      this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
 
-    this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
+      this.revolutionsCount = 0;
+      // // After the animation has stopped. The spacing between the containers is not correct
+      this.debugUtils.redrawDebugOutlines();
 
-    this.revolutionsCount = 0;
-    // // After the animation has stopped. The spacing between the containers is not correct
-    this.debugUtils.redrawDebugOutlines();
-
-    // TODO: refactor
-    this.resolveIsSpinningPromise?.("ok");
-    this.resolveIsSpinningPromise = undefined;
+      // TODO: refactor
+      this.resolveIsSpinningPromise?.("ok");
+      this.resolveIsSpinningPromise = undefined;
+    });
   }
 
   setContainerInitialPositions() {
@@ -165,6 +165,27 @@ export class SlotMachineReel extends GameObjects.GameObject {
     container: Phaser.GameObjects.Container,
     symbolName: string
   ) {
+    const offsetFromSymbolToPayline = this.getOffsetToPayline(
+      container,
+      symbolName
+    );
+
+    const durationUntilSymbolReachesPayline = Math.round(
+      Math.abs(offsetFromSymbolToPayline) / this.animationPreferences.speed
+    );
+    return this.scene.tweens.add({
+      targets: container,
+      y: "+=" + offsetFromSymbolToPayline,
+      duration: durationUntilSymbolReachesPayline,
+      ease: "Elastic",
+      easeParams: [1.5, 1],
+    });
+  }
+
+  private getOffsetToPayline(
+    container: GameObjects.Container,
+    symbolName: string
+  ) {
     const symbol = container.list.find(
       (child): child is Phaser.GameObjects.Image =>
         (child as Phaser.GameObjects.Image).texture.key === symbolName
@@ -174,20 +195,7 @@ export class SlotMachineReel extends GameObjects.GameObject {
       throw new Error("Symbol not found. Make sure the symbolName is correct");
     }
 
-    const distanceBetweenSymbolAndPayline =
-      this.payLine.y - symbol.y + SlotMachineReel.symbolHeight / 2;
-
-    const durationUntilSymbolReachesPayline = Math.round(
-      Math.abs(distanceBetweenSymbolAndPayline) /
-        this.animationPreferences.speed
-    );
-    return this.scene.tweens.add({
-      targets: container,
-      y: "+=" + distanceBetweenSymbolAndPayline,
-      duration: durationUntilSymbolReachesPayline,
-      ease: "Elastic",
-      easeParams: [1.5, 1],
-    });
+    return this.payLine.y - symbol.y + SlotMachineReel.symbolHeight / 2;
   }
 
   isSpinning() {
