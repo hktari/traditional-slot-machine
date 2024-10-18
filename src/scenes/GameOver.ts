@@ -237,7 +237,7 @@ export class GameOver extends Scene {
     this.tweens.killAll();
 
     this.alignContainers();
-    this.animateContainerToSymbol(this.getLeftMostContainer(), "slotSymbol1");
+    this.animateContainerToSymbol(this.getLeftMostContainer(), "slotSymbol4");
     // this.alignContainers();
 
     this.spinCounter = 0;
@@ -250,15 +250,25 @@ export class GameOver extends Scene {
     container: Phaser.GameObjects.Container,
     symbolName: string
   ) {
-    const symbol = container.list.find(
-      (child) => (child as Phaser.GameObjects.Image).texture.key === symbolName
-    ) as Phaser.GameObjects.Image;
-    if (!symbol) {
+    const symbolPosition = container.list.indexOf(
+      container.list.find(
+        (child): child is Phaser.GameObjects.Image =>
+          (child as Phaser.GameObjects.Image).texture.key === symbolName
+      )!
+    );
+
+    if (symbolPosition === -1) {
       throw new Error("Symbol not found. Make sure the symbolName is correct");
     }
-    const distanceBetweenSymbolAndPayline = Math.abs(
-      this.payLine.x - symbol.getCenter().x
+
+    const currentSymbolAtPaylinePosition = container.list.length - 1;
+
+    const numberOfPlacesToPayline = Math.abs(
+      symbolPosition - currentSymbolAtPaylinePosition
     );
+
+    const distanceBetweenSymbolAndPayline =
+      numberOfPlacesToPayline * (this.symbolWidth + this.spacing);
 
     const durationUntilSymbolReachesPayline = Math.abs(
       Math.round(distanceBetweenSymbolAndPayline / this.animationSpeed)
