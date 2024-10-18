@@ -50,17 +50,10 @@ export class GameOver extends Scene {
       100
     );
 
-    this.container1 = this.createContainerWithSymbols(
-      this.startLine.getBounds().right + this.symbolWidth / 2,
-      this.startLine.y
-    );
+    this.container1 = this.createContainerWithSymbols(0, 0);
 
-    this.container2 = this.createContainerWithSymbols(
-      this.startLine.getBounds().right,
-      this.startLine.y
-    );
-
-    this.placeContainerBehindOther(this.container2);
+    this.container2 = this.createContainerWithSymbols(0, 0);
+    this.setContainerInitialPositions();
 
     const speed = 3;
 
@@ -70,7 +63,7 @@ export class GameOver extends Scene {
       line.setToTop()
     );
 
-    this.redrawDebugGraphics();
+    this.redrawDebugOutlines();
 
     this.input.on("pointerdown", () => {
       if (!this.isSpinning()) {
@@ -134,24 +127,36 @@ export class GameOver extends Scene {
     const leftMostContainer = this.getLeftMostContainer();
     this.placeContainerBehindOther(leftMostContainer);
   }
-  redrawDebugGraphics() {
-    this.children.remove(this.debugGraphics);
+
+  redrawDebugOutlines() {
+    this.debugGraphics.forEach((graphic) => graphic.destroy());
     this.debugGraphics = [];
-    this.debugGraphics.push(this.drawContainerOutlines(this.container1));
-    this.debugGraphics.push(this.drawContainerOutlines(this.container2));
+    const containerColor = 0x00ff00;
+    const symbolColor = 0xff00ff;
+
+    [this.container1, this.container2].forEach((container) => {
+      this.drawDebugOutlinesForContainer(containerColor, container);
+      container.list.forEach((child) => {
+        this.drawDebugOutlinesForContainer(
+          symbolColor,
+          child as Phaser.GameObjects.Container
+        );
+      });
+    });
   }
 
-  drawContainerOutlines(container: Phaser.GameObjects.Container) {
+  private drawDebugOutlinesForContainer(
+    color: number,
+    gameObject: Phaser.GameObjects.Container
+  ) {
     const graphics = this.add.graphics();
-    graphics.lineStyle(2, 0xff0000, 1);
-    graphics.strokeRect(
-      container.getBounds().x,
-      container.getBounds().y,
-      container.getBounds().width,
-      container.getBounds().height
-    );
+    graphics.lineStyle(2, color, 1);
+    const bounds = gameObject.getBounds();
+    graphics.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    this.debugGraphics.push(graphics);
     return graphics;
   }
+
   createContainerWithSymbols(x: number, y: number) {
     const container = this.add.container(x, y);
     for (let i = 0; i < this.symbols.length; i++) {
@@ -186,9 +191,6 @@ export class GameOver extends Scene {
       this.tweens.isTweening(this.container1) ||
       this.tweens.isTweening(this.container2)
     );
-  }
-  stopAnimations() {
-    this.tweens.killAll();
   }
 
   private spinnerStopTimer: Phaser.Time.TimerEvent | null = null;
@@ -225,11 +227,30 @@ export class GameOver extends Scene {
     this.stopAnimations();
     this.spinCounter = 0;
     // TODO: needed ?
-    this.spinnerStopTimer = null; 
+    this.spinnerStopTimer = null;
     // After the animation has stopped. The spacing between the containers is not correct
     this.alignContainers();
-    this.redrawDebugGraphics();
+    this.redrawDebugOutlines();
   }
+  stopAnimations() {
+    // TODO: forward animation so that the image center aligns with the payline
+
+    this.tweens.killAll();
+  }
+
+  setContainerInitialPositions() {
+    // TODO: position container1 so that its right most symbols aligns with the payline
+    this.container1.setX(this.payLine.x);
+    this.container1.setY(this.payLine.y);
+    const rightMostSymbol = this.container1.getAt(
+      this.container1.list.length - 1
+    ) as Phaser.GameObjects.Image;
+    const translate = this.payLine.x - rightMostSymbol.getCenter().x;
+    this.container1.setX(this.container1.x - translate);
+
+    // this.placeContainerBehindOther(this.container2);
+  }
+
   placeContainerBehindOther(container: Phaser.GameObjects.Container) {
     const leftMostContainer =
       this.container1 === container ? this.container2 : this.container1;
@@ -243,5 +264,6 @@ export class GameOver extends Scene {
         this.symbolWidth / 2 -
         this.spacing
     );
+    container.setY(leftMostContainer.y);
   }
 }
