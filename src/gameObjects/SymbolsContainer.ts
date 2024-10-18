@@ -1,3 +1,4 @@
+import { DebugUtils } from "../utils/DebugUtils";
 import IndicatorLine from "./IndicatorLine";
 import { SlotMachineReelAnimationPreferences } from "./SlotMachineReel";
 
@@ -15,6 +16,9 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
     super(scene, x, y);
 
     this.addSymbols(symbols);
+
+    const debugUtils = DebugUtils.getInstance(scene);
+    debugUtils.addContainer(this);
 
     scene.add.existing(this);
   }

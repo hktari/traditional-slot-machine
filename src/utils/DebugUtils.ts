@@ -12,7 +12,7 @@ export class DebugUtils {
     }
     return DebugUtils.instance;
   }
-  constructor(scene: Scene) {
+  private constructor(scene: Scene) {
     this.scene = scene;
   }
 

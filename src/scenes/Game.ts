@@ -38,7 +38,7 @@ export class Game extends Scene {
   constructor() {
     super("Game");
 
-    this.debugUtils = new DebugUtils(this);
+    this.debugUtils = DebugUtils.getInstance(this);
   }
 
   preload() {
