@@ -2,7 +2,7 @@ import IndicatorLine from "./IndicatorLine";
 import { SlotMachineReelAnimationPreferences } from "./SlotMachineReel";
 
 export default class SymbolsContainer extends Phaser.GameObjects.Container {
-  private readonly symbolWidth = 100;
+  static symbolWidth: 100;
 
   constructor(
     scene: Phaser.Scene,
@@ -24,7 +24,7 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
     for (let i = 0; i < symbolsCount; i++) {
       const symbol = this.scene.add.image(
         0,
-        i * (this.symbolWidth + this.spacing),
+        i * (SymbolsContainer.symbolWidth + this.spacing),
         symbols[i]
       );
       this.add(symbol);
@@ -51,7 +51,7 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
     );
 
     const distanceBetweenSymbolAndPayline =
-      numberOfPlacesToPayline * (this.symbolWidth + this.spacing);
+      numberOfPlacesToPayline * (SymbolsContainer.symbolWidth + this.spacing);
 
     const durationUntilSymbolReachesPayline = Math.abs(
       Math.round(
@@ -67,7 +67,7 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
   }
 
   placeInFrontOf(other: Phaser.GameObjects.Container) {
-    this.setX(other.getBounds().right + this.spacing + this.symbolWidth / 2);
+    this.setX(other.getBounds().right + this.spacing + SymbolsContainer.symbolWidth / 2);
     this.setY(other.y);
   }
 
