@@ -124,8 +124,10 @@ export class GameOver extends Scene {
    * Aligns the containers so that the leftmost container is placed behind the rightmost container
    */
   alignContainers() {
-    const leftMostContainer = this.getLeftMostContainer();
-    this.placeContainerBehindOther(leftMostContainer);
+    this.placeContainerBehindOther(
+      this.getLeftMostContainer(),
+      this.getRightMostContainer()
+    );
   }
 
   redrawDebugOutlines() {
@@ -220,7 +222,8 @@ export class GameOver extends Scene {
           this.stopAnimationAndDisplayResult();
           // });
         } else {
-          this.placeContainerBehindOther(container);
+          const containerBehind = this.getLeftMostContainer();
+          this.placeContainerBehindOther(container, containerBehind);
 
           this.animateXToFinishLine(container, speed);
         }
@@ -233,7 +236,7 @@ export class GameOver extends Scene {
     // TODO: needed ?
     this.spinnerStopTimer = null;
     // After the animation has stopped. The spacing between the containers is not correct
-    // this.alignContainers();
+    this.alignContainers();
     this.redrawDebugOutlines();
   }
   stopAnimations() {
@@ -243,32 +246,38 @@ export class GameOver extends Scene {
   }
 
   setContainerInitialPositions() {
-    // TODO: position container1 so that its right most symbols aligns with the payline
+    // Align first image with payline
     this.container1.setX(this.payLine.x);
     this.container1.setY(this.payLine.y);
-    const rightMostSymbol = this.container1.getAt(
-      this.container1.list.length - 1
-    ) as Phaser.GameObjects.Image;
-    const translate = this.payLine.x - rightMostSymbol.getCenter().x;
-    this.drawDebug(0xffffff, rightMostSymbol.getBounds());
-    this.container1.setX(this.container1.x - translate);
+    const translateXToLastSymbol =
+      (this.symbolWidth / 2 + this.spacing) * this.container1.list.length +
+      this.symbolWidth / 2;
 
-    this.placeContainerBehindOther(this.container2);
+    this.container1.setX(this.container1.x - translateXToLastSymbol);
+
+    this.placeContainerInfrontOfOther(this.container2, this.container1);
   }
 
-  placeContainerBehindOther(container: Phaser.GameObjects.Container) {
-    const leftMostContainer =
-      this.container1 === container ? this.container2 : this.container1;
+  placeContainerInfrontOfOther(
+    container: Phaser.GameObjects.Container,
+    other: Phaser.GameObjects.Container
+  ) {
     container.setX(
-      leftMostContainer.x - container.getBounds().width - this.spacing
+      other.getBounds().right + this.spacing + this.symbolWidth / 2
     );
+    container.setY(other.y);
+  }
 
+  placeContainerBehindOther(
+    container: Phaser.GameObjects.Container,
+    other: Phaser.GameObjects.Container
+  ) {
     container.setX(
-      leftMostContainer.getBounds().left -
+      other.getBounds().left -
         container.getBounds().width +
         this.symbolWidth / 2 -
         this.spacing
     );
-    container.setY(leftMostContainer.y);
+    container.setY(other.y);
   }
 }
