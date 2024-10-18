@@ -8,11 +8,6 @@ export enum SlotMachineZIndex {
   symbols = 300,
 }
 
-export interface SlotMachineReelAnimationPreferences {
-  singleRevolutionDurationMs: number;
-  revolutionsCount: number;
-}
-
 export class Game extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
   slotMachine: Phaser.GameObjects.Image;
@@ -22,17 +17,9 @@ export class Game extends Scene {
   slotMachineReels: SlotMachineReel[];
   slotMachineReelsBackground: SlotMachineReelBackground;
 
-  /**
-   * Spin animation preferences
-   */
-  SpinDurationMs = 3000;
-  revolutionsCount = 30;
-
-  singleRevolutionDurationMs = this.SpinDurationMs / this.revolutionsCount;
-
-  animationPreferences = {
-    singleRevolutionDurationMs: this.singleRevolutionDurationMs,
-    revolutionsCount: this.revolutionsCount,
+  spinAnimationPreferences = {
+    speed: 3,
+    revolutionsCount: 30,
   };
 
   get isSpinning(): boolean {
@@ -70,15 +57,8 @@ export class Game extends Scene {
     this.camera = this.cameras.main;
     this.camera.setBackgroundColor(0xddf6f7);
 
-    // TODO: move to container
-    // TODO: add symbols to container in 3x3 grid
-    this.slotMachineReelsBackground = new SlotMachineReelBackground(
-      this,
-      this.cameras.main.centerX,
-      this.cameras.main.centerY
-    );
-
     this._createReels();
+
     this.slotMachine = this.add.image(
       this.cameras.main.centerX,
       this.cameras.main.centerY,
@@ -96,7 +76,8 @@ export class Game extends Scene {
     "slotSymbol2",
     "slotSymbol3",
     "slotSymbol4",
-    "slotSymbol5",
+    // TODO: add more symbols
+    // "slotSymbol5",
   ];
   _createReels() {
     this.slotMachineReels = [];
@@ -116,7 +97,7 @@ export class Game extends Scene {
         leftReelX + i * distanceBetweennReels,
         leftReelY,
         this.reelSymbols,
-        this.animationPreferences
+        this.spinAnimationPreferences
       );
       this.slotMachineReels.push(reel);
     }
@@ -157,12 +138,6 @@ export class Game extends Scene {
 
   async spin() {
     this.isSpinning = true;
-
-    // TODO: make spin interface match SlotMachineReel
-    // TODO: await animation completion
-    const tween = this.slotMachineReelsBackground.spin(
-      this.animationPreferences
-    );
 
     const spinResult = this._getRandomSpinResult();
 

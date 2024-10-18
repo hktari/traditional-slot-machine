@@ -1,8 +1,9 @@
 import { GameObjects, Scene } from "phaser";
-import {
-  SlotMachineReelAnimationPreferences,
-  SlotMachineZIndex,
-} from "../scenes/Game";
+
+export interface SlotMachineReelAnimationPreferences {
+  revolutionsCount: number;
+  speed: number;
+}
 
 export class SlotMachineReel extends GameObjects.Container {
   static symbolWidth = 96;
@@ -23,8 +24,7 @@ export class SlotMachineReel extends GameObjects.Container {
     private animationPreferences: SlotMachineReelAnimationPreferences
   ) {
     super(scene, x, y);
-  
- 
+
     scene.add.existing(this);
   }
 
