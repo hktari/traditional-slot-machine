@@ -1,7 +1,7 @@
 import { Scene } from "phaser";
 import IndicatorLine from "../gameObjects/IndicatorLine";
 
-export class GameOver extends Scene {
+export class AnimationDemo extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
   background: Phaser.GameObjects.Image;
   gameover_text: Phaser.GameObjects.Text;
