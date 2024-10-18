@@ -69,6 +69,7 @@ export class Game extends Scene {
     this._updateLeverVisibility();
 
     this._drawDebugCenter();
+    this.redrawDebugOutlines();
   }
 
   private reelSymbols = [
@@ -118,6 +119,43 @@ export class Game extends Scene {
       "leverDown"
     );
   }
+
+  private debugGraphics: Phaser.GameObjects.Graphics[] = [];
+
+  // TODO: move into utils
+  redrawDebugOutlines() {
+    this.debugGraphics.forEach((graphic) => graphic.destroy());
+    this.debugGraphics = [];
+    const containerColor = 0x00ff00;
+    const symbolColor = 0xff00ff;
+
+    this.slotMachineReels.forEach((container) => {
+      this.drawDebugOutlinesForContainer(containerColor, container);
+      container.list.forEach((child) => {
+        this.drawDebugOutlinesForContainer(
+          symbolColor,
+          child as Phaser.GameObjects.Container
+        );
+      });
+    });
+  }
+
+  private drawDebugOutlinesForContainer(
+    color: number,
+    gameObject: Phaser.GameObjects.Container
+  ) {
+    const bounds = gameObject.getBounds();
+    return this.drawDebug(color, bounds);
+  }
+
+  private drawDebug(color: number, bounds: Phaser.Geom.Rectangle) {
+    const graphics = this.add.graphics();
+    graphics.lineStyle(2, color, 1);
+    graphics.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    this.debugGraphics.push(graphics);
+    return graphics;
+  }
+
   private _drawDebugCenter() {
     this.add.rectangle(
       this.cameras.main.centerX,
