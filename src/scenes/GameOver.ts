@@ -203,7 +203,7 @@ export class GameOver extends Scene {
 
   animateXToFinishLine(container: Phaser.GameObjects.Container, speed: number) {
     const distanceToFinishLine =
-      this.finishLine.getBounds().left - container.getBounds().left;
+      this.finishLine.getBounds().left - container.getBounds().left + this.symbolWidth / 2;
 
     const duration = Math.round(distanceToFinishLine / speed);
 
