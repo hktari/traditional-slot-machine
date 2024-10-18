@@ -1,6 +1,7 @@
 import { Scene } from "phaser";
 import { SlotMachineReel } from "../gameObjects/SlotMachineReel";
 import SlotMachineReelBackground from "../gameObjects/SlotMachineReelBackground";
+import { DebugUtils } from "../utils/DebugUtils";
 
 export enum SlotMachineZIndex {
   reelsBackground = 1000,
@@ -33,8 +34,11 @@ export class Game extends Scene {
 
   private _isSpinning: boolean = false;
 
+  private readonly debugUtils: DebugUtils;
   constructor() {
     super("Game");
+
+    this.debugUtils = new DebugUtils(this);
   }
 
   preload() {
@@ -68,8 +72,7 @@ export class Game extends Scene {
 
     this._updateLeverVisibility();
 
-    this._drawDebugCenter();
-    this.redrawDebugOutlines();
+    this.debugUtils.redrawDebugOutlines();
   }
 
   private reelSymbols = [
@@ -119,72 +122,6 @@ export class Game extends Scene {
       "leverDown"
     );
   }
-
-  private debugGraphics: Phaser.GameObjects.Graphics[] = [];
-
-  // TODO: move into utils
-  redrawDebugOutlines() {
-    this.debugGraphics.forEach((graphic) => graphic.destroy());
-    this.debugGraphics = [];
-
-    this.slotMachineReels.forEach((container) => {
-      this.drawDebugOutlinesForContainerRecursively(container, 5);
-    });
-  }
-
-  private drawDebugOutlinesForContainerRecursively(
-    gameObject: Phaser.GameObjects.Container,
-    depth: number
-  ) {
-    if (depth <= 0) {
-      return;
-    }
-
-    const imageColor = 0xffaa33;
-    const containerColorsByDepth = [
-      0xff0000, 0x00ff00, 0x0000ff, 0xff00ff, 0xffff00, 0x00ffff,
-    ];
-    const color = containerColorsByDepth[depth - 1];
-
-    const bounds = gameObject.getBounds();
-    this.drawDebug(color, bounds);
-
-    gameObject.list.forEach((child) => {
-      if (child instanceof Phaser.GameObjects.Container) {
-        this.drawDebugOutlinesForContainerRecursively(child, depth - 1);
-      } else if (child instanceof Phaser.GameObjects.Image) {
-        const childBounds = child.getBounds();
-        this.drawDebug(imageColor, childBounds);
-      }
-    });
-  }
-
-  private drawDebug(color: number, bounds: Phaser.Geom.Rectangle) {
-    const graphics = this.add.graphics();
-    graphics.lineStyle(2, color, 1);
-    graphics.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    this.debugGraphics.push(graphics);
-    return graphics;
-  }
-
-  private _drawDebugCenter() {
-    this.add.rectangle(
-      this.cameras.main.centerX,
-      this.cameras.main.centerY,
-      10,
-      10,
-      0x00ff00,
-      0.5
-    );
-    this.add.circle(
-      this.cameras.main.centerX,
-      this.cameras.main.centerY,
-      2,
-      0xff0000,
-      0.5
-    );
-  }
-
   async spin() {
     this.isSpinning = true;
 
