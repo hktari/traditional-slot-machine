@@ -95,7 +95,7 @@ export class SlotMachineReel extends GameObjects.GameObject {
     value: string | PromiseLike<string>
   ) => void;
 
-  animateContainerToFinishLine(container: SymbolsContainer, speed: number) {
+  private _loopSymbolsSpinAnimation(container: SymbolsContainer) {
     container
       .animateAlignTopToYPosition(this.finishLine.y)
       .on("complete", () => {
@@ -107,7 +107,7 @@ export class SlotMachineReel extends GameObjects.GameObject {
         ) {
           this.stopAnimationAndDisplayResult();
         } else {
-          this.animateContainerToFinishLine(container, speed);
+          this._loopSymbolsSpinAnimation(container);
         }
       });
   }
@@ -117,21 +117,20 @@ export class SlotMachineReel extends GameObjects.GameObject {
       .getTweensOf([this.container1, this.container2])
       .forEach((tween) => tween.stop());
 
-    // TODO: refactor
-    this.animateContainerToSymbol(
-      this.getBottomMostContainer(),
-      this.spinResultSymbol!
-    ).on("complete", () => {
-      this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
-
-      this.revolutionsCount = 0;
-      // // After the animation has stopped. The spacing between the containers is not correct
-      this.debugUtils.redrawDebugOutlines();
-
+    this.getBottomMostContainer()
       // TODO: refactor
-      this.resolveIsSpinningPromise?.("ok");
-      this.resolveIsSpinningPromise = undefined;
-    });
+      .animateAlignSymbolToYPosition(this.spinResultSymbol!, this.payLine.y)
+      .on("complete", () => {
+        // After the animation has stopped. The spacing between the containers is not correct
+        this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
+
+        this.revolutionsCount = 0;
+        this.debugUtils.redrawDebugOutlines();
+
+        // TODO: refactor
+        this.resolveIsSpinningPromise?.("ok");
+        this.resolveIsSpinningPromise = undefined;
+      });
   }
 
   setContainerInitialPositions() {
@@ -146,16 +145,6 @@ export class SlotMachineReel extends GameObjects.GameObject {
     this.container1.setY(this.container1.y - distanceBetweenFirstAndLastSymbol);
 
     this.container2.placeAboveOf(this.container1);
-  }
-
-  // TODO: move into SymbolsContainer
-  animateContainerToSymbol(
-    container: SymbolsContainer,
-    symbolName: string
-  ) {
-
-
-    container.animateAlignSymbolToYPosition(symbolName, this.payLine.y);
   }
 
   isSpinning() {
@@ -173,14 +162,8 @@ export class SlotMachineReel extends GameObjects.GameObject {
     return new Promise((resolve) => {
       this.spinResultSymbol = resultSymbol;
       this.resolveIsSpinningPromise = resolve;
-      this.animateContainerToFinishLine(
-        this.container1,
-        this.animationPreferences.speed
-      );
-      this.animateContainerToFinishLine(
-        this.container2,
-        this.animationPreferences.speed
-      );
+      this._loopSymbolsSpinAnimation(this.container1);
+      this._loopSymbolsSpinAnimation(this.container2);
     });
   }
 
