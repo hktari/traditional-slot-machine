@@ -3,7 +3,8 @@ import { SlotMachineReelAnimationPreferences } from "./gameObjects/SlotMachineRe
 import SymbolsContainer from "./gameObjects/SymbolsContainer";
 
 export default class ReelAnimationManager {
-  private currentSymbolToSpinTo: string | undefined;
+  private currentSymbolToSpinTo: string | null = null;
+  private resolveIsSpinningPromise: ((value: void) => void) | null = null;
   private revolutionsCount = 0;
 
   constructor(
@@ -15,13 +16,15 @@ export default class ReelAnimationManager {
     private animationPreferences: SlotMachineReelAnimationPreferences
   ) {}
 
-  private resolveIsSpinningPromise?: (value: void) => void;
-
   isSpinning(): boolean {
-    return this.resolveIsSpinningPromise !== undefined;
+    return this.resolveIsSpinningPromise !== null;
   }
 
   spinToSymbol(symbol: string): Promise<void> {
+    if (this.isSpinning()) {
+      throw new Error("Reel is already spinning");
+    }
+
     return new Promise((resolve) => {
       this.currentSymbolToSpinTo = symbol;
       this.resolveIsSpinningPromise = resolve;
@@ -48,28 +51,34 @@ export default class ReelAnimationManager {
   }
 
   private _stopAnimationAndDisplayResult() {
-    this.scene.tweens
-      .getTweensOf([this.container1, this.container2])
-      .forEach((tween) => tween.stop());
+    this._stopAnimations();
 
     this._getBottomMostContainer()
-      // TODO: refactor
       .animateAlignSymbolToYPosition(
         this.currentSymbolToSpinTo!,
         this.payLine.y
       )
       .on("complete", () => {
-        // After the animation has stopped. The spacing between the containers is not correct
+        // After the animation has stopped. The spacing between the containers is not correct. Correct it.
         this._getTopMostContainer().placeAboveOf(
           this._getBottomMostContainer()
         );
 
-        this.revolutionsCount = 0;
-
-        // TODO: refactor
-        this.resolveIsSpinningPromise?.();
-        this.resolveIsSpinningPromise = undefined;
+        const spinFinishedPromise = this.resolveIsSpinningPromise;
+        this._resetState();
+        spinFinishedPromise?.();
       });
+  }
+
+  private _resetState() {
+    this.resolveIsSpinningPromise = null;
+    this.revolutionsCount = 0;
+  }
+
+  private _stopAnimations() {
+    this.scene.tweens
+      .getTweensOf([this.container1, this.container2])
+      .forEach((tween) => tween.stop());
   }
 
   private _getTopMostContainer() {
