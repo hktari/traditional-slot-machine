@@ -24,6 +24,18 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
     scene.add.existing(this);
   }
 
+  animateAlignTopToYPosition(y: number) {
+    const distanceToFinishLine = y - this.y + SymbolsContainer.symbolHeight / 2;
+    const duration = distanceToFinishLine / this.animationPreferences.speed;
+
+    return this.scene.tweens.add({
+      targets: this,
+      y: "+=" + distanceToFinishLine,
+      duration,
+      ease: "linear",
+    });
+  }
+
   private addSymbols(symbols: string[]) {
     const symbolsCount = symbols.length;
     for (let i = 0; i < symbolsCount; i++) {

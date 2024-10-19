@@ -96,22 +96,9 @@ export class SlotMachineReel extends GameObjects.GameObject {
   ) => void;
 
   animateContainerToFinishLine(container: SymbolsContainer, speed: number) {
-    const distanceToFinishLine = Math.abs(
-      this.finishLine.getBounds().bottom -
-        container.y +
-        SymbolsContainer.symbolHeight / 2
-    );
-
-    const duration = distanceToFinishLine / speed;
-
-    // TODO: reuse tween
-    this.scene.tweens.add({
-      targets: container,
-      y: "+=" + distanceToFinishLine,
-      duration,
-      ease: "linear",
-      // TODO: extract onComplete
-      onComplete: () => {
+    container
+      .animateAlignTopToYPosition(this.finishLine.y)
+      .on("complete", () => {
         this.revolutionsCount++;
         const containerAbove = this.getTopMostContainer();
         container.placeAboveOf(containerAbove);
@@ -122,8 +109,7 @@ export class SlotMachineReel extends GameObjects.GameObject {
         } else {
           this.animateContainerToFinishLine(container, speed);
         }
-      },
-    });
+      });
   }
 
   stopAnimationAndDisplayResult() {
@@ -161,6 +147,8 @@ export class SlotMachineReel extends GameObjects.GameObject {
 
     this.container2.placeAboveOf(this.container1);
   }
+
+  // TODO: move into SymbolsContainer
   animateContainerToSymbol(
     container: Phaser.GameObjects.Container,
     symbolName: string
@@ -209,6 +197,7 @@ export class SlotMachineReel extends GameObjects.GameObject {
       throw new Error("Already spinning");
     }
 
+    return this.runAnimation;
     return new Promise((resolve) => {
       this.spinResultSymbol = resultSymbol;
       this.resolveIsSpinningPromise = resolve;
