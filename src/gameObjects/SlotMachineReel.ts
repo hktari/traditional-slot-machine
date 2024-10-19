@@ -150,39 +150,12 @@ export class SlotMachineReel extends GameObjects.GameObject {
 
   // TODO: move into SymbolsContainer
   animateContainerToSymbol(
-    container: Phaser.GameObjects.Container,
+    container: SymbolsContainer,
     symbolName: string
   ) {
-    const offsetFromSymbolToPayline = this.getOffsetToPayline(
-      container,
-      symbolName
-    );
 
-    const durationUntilSymbolReachesPayline =
-      Math.abs(offsetFromSymbolToPayline) / this.animationPreferences.speed;
-    return this.scene.tweens.add({
-      targets: container,
-      y: "+=" + offsetFromSymbolToPayline,
-      duration: durationUntilSymbolReachesPayline,
-      ease: "Elastic",
-      easeParams: [1.5, 1],
-    });
-  }
 
-  private getOffsetToPayline(
-    container: GameObjects.Container,
-    symbolName: string
-  ) {
-    const symbol = container.list.find(
-      (child): child is Phaser.GameObjects.Image =>
-        (child as Phaser.GameObjects.Image).texture.key === symbolName
-    );
-
-    if (!symbol) {
-      throw new Error("Symbol not found. Make sure the symbolName is correct");
-    }
-
-    return this.payLine.y - symbol.y + SlotMachineReel.symbolHeight / 2;
+    container.animateAlignSymbolToYPosition(symbolName, this.payLine.y);
   }
 
   isSpinning() {
@@ -197,7 +170,6 @@ export class SlotMachineReel extends GameObjects.GameObject {
       throw new Error("Already spinning");
     }
 
-    return this.runAnimation;
     return new Promise((resolve) => {
       this.spinResultSymbol = resultSymbol;
       this.resolveIsSpinningPromise = resolve;
