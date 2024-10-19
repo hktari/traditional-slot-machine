@@ -3,12 +3,6 @@ import { SlotMachineReel } from "../gameObjects/SlotMachineReel";
 import SlotMachineReelBackground from "../gameObjects/SlotMachineReelBackground";
 import { DebugUtils } from "../utils/DebugUtils";
 
-export enum SlotMachineZIndex {
-  reelsBackground = 1000,
-  slotMachine = 200,
-  symbols = 300,
-}
-
 export class Game extends Scene {
   camera: Phaser.Cameras.Scene2D.Camera;
   slotMachine: Phaser.GameObjects.Image;
@@ -16,7 +10,6 @@ export class Game extends Scene {
   slotMachineLeverUp: Phaser.GameObjects.Image;
   slotMachineLeverDown: Phaser.GameObjects.Image;
   slotMachineReels: SlotMachineReel[];
-  slotMachineReelsBackground: SlotMachineReelBackground;
 
   spinAnimationPreferences = {
     speed: 1.6,
@@ -71,8 +64,6 @@ export class Game extends Scene {
     this._createLever();
 
     this._updateLeverVisibility();
-
-    this.debugUtils.redrawDebugOutlines();
   }
 
   private reelSymbols = [
@@ -80,8 +71,6 @@ export class Game extends Scene {
     "slotSymbol2",
     "slotSymbol3",
     "slotSymbol4",
-    // TODO: add more symbols
-    // "slotSymbol5",
   ];
   _createReels() {
     this.slotMachineReels = [];
@@ -149,7 +138,6 @@ export class Game extends Scene {
   private _getRandomSpinResult() {
     const results = [];
     for (let i = 0; i < this.slotMachineReels.length; i++) {
-      // TODO: extract into utility file
       const randomSymbol = Phaser.Utils.Array.GetRandom(this.reelSymbols);
       results.push(randomSymbol);
     }
