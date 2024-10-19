@@ -102,7 +102,7 @@ export class SlotMachineReel extends GameObjects.GameObject {
         SymbolsContainer.symbolHeight / 2
     );
 
-    const duration = Math.round(distanceToFinishLine / speed);
+    const duration = distanceToFinishLine / speed;
 
     // TODO: reuse tween
     this.scene.tweens.add({
@@ -170,9 +170,8 @@ export class SlotMachineReel extends GameObjects.GameObject {
       symbolName
     );
 
-    const durationUntilSymbolReachesPayline = Math.round(
-      Math.abs(offsetFromSymbolToPayline) / this.animationPreferences.speed
-    );
+    const durationUntilSymbolReachesPayline =
+      Math.abs(offsetFromSymbolToPayline) / this.animationPreferences.speed;
     return this.scene.tweens.add({
       targets: container,
       y: "+=" + offsetFromSymbolToPayline,
