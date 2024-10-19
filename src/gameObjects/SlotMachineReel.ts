@@ -101,24 +101,22 @@ export class SlotMachineReel extends GameObjects.GameObject {
   }
 
   setContainerInitialPositions() {
-    // Align first image with payline
     this.container1.setX(this.payLine.x);
     this.container1.setY(this.payLine.y);
-
+    
+    // TODO: refactor
     const distanceBetweenFirstAndLastSymbol =
-      (SymbolsContainer.symbolHeight + SlotMachineReel.verticalSpacing) *
-      (this.container1.list.length - 1);
-
+    (SymbolsContainer.symbolHeight + SlotMachineReel.verticalSpacing) *
+    (this.container1.list.length - 1);
+    
+    // Align last symbol with payline
     this.container1.setY(this.container1.y - distanceBetweenFirstAndLastSymbol);
 
     this.container2.placeAboveOf(this.container1);
   }
 
   isSpinning() {
-    return (
-      this.scene.tweens.isTweening(this.container1) ||
-      this.scene.tweens.isTweening(this.container2)
-    );
+    return this.reelAnimationManager.isSpinning();
   }
   spin(resultSymbol: string): Promise<void> {
     if (this.reelAnimationManager.isSpinning()) {
