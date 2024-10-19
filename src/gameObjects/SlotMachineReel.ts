@@ -2,6 +2,7 @@ import { GameObjects, Scene } from "phaser";
 import IndicatorLine from "./IndicatorLine";
 import SymbolsContainer from "./SymbolsContainer";
 import { DebugUtils } from "../utils/DebugUtils";
+import ReelAnimationManager from "../ReelAnimationManager";
 
 export interface SlotMachineReelAnimationPreferences {
   revolutionsCount: number;
@@ -26,7 +27,8 @@ export class SlotMachineReel extends GameObjects.GameObject {
   payLine: IndicatorLine;
 
   private readonly debugUtils: DebugUtils;
-  spinResultSymbol: string | undefined;
+  private readonly reelAnimationManager: ReelAnimationManager;
+
   constructor(
     scene: Scene,
     private x: number,
@@ -58,8 +60,17 @@ export class SlotMachineReel extends GameObjects.GameObject {
     this.createIndicatorLines();
     this.setContainerInitialPositions();
 
+    this.reelAnimationManager = new ReelAnimationManager(
+      scene,
+      this.container1,
+      this.container2,
+      this.finishLine,
+      this.payLine,
+      animationPreferences
+    );
     scene.add.existing(this);
   }
+
   private createIndicatorLines() {
     const width = SymbolsContainer.symbolWidth;
     const height = 2;
@@ -89,50 +100,6 @@ export class SlotMachineReel extends GameObjects.GameObject {
     );
   }
 
-  private revolutionsCount = 0;
-
-  private resolveIsSpinningPromise?: (
-    value: string | PromiseLike<string>
-  ) => void;
-
-  private _loopSymbolsSpinAnimation(container: SymbolsContainer) {
-    container
-      .animateAlignTopToYPosition(this.finishLine.y)
-      .on("complete", () => {
-        this.revolutionsCount++;
-        const containerAbove = this.getTopMostContainer();
-        container.placeAboveOf(containerAbove);
-        if (
-          this.revolutionsCount >= this.animationPreferences.revolutionsCount
-        ) {
-          this.stopAnimationAndDisplayResult();
-        } else {
-          this._loopSymbolsSpinAnimation(container);
-        }
-      });
-  }
-
-  stopAnimationAndDisplayResult() {
-    this.scene.tweens
-      .getTweensOf([this.container1, this.container2])
-      .forEach((tween) => tween.stop());
-
-    this.getBottomMostContainer()
-      // TODO: refactor
-      .animateAlignSymbolToYPosition(this.spinResultSymbol!, this.payLine.y)
-      .on("complete", () => {
-        // After the animation has stopped. The spacing between the containers is not correct
-        this.getTopMostContainer().placeAboveOf(this.getBottomMostContainer());
-
-        this.revolutionsCount = 0;
-        this.debugUtils.redrawDebugOutlines();
-
-        // TODO: refactor
-        this.resolveIsSpinningPromise?.("ok");
-        this.resolveIsSpinningPromise = undefined;
-      });
-  }
-
   setContainerInitialPositions() {
     // Align first image with payline
     this.container1.setX(this.payLine.x);
@@ -153,30 +120,11 @@ export class SlotMachineReel extends GameObjects.GameObject {
       this.scene.tweens.isTweening(this.container2)
     );
   }
-
-  spin(resultSymbol?: string): Promise<string> {
-    if (this.resolveIsSpinningPromise) {
+  spin(resultSymbol: string): Promise<void> {
+    if (this.reelAnimationManager.isSpinning()) {
       throw new Error("Already spinning");
     }
 
-    return new Promise((resolve) => {
-      this.spinResultSymbol = resultSymbol;
-      this.resolveIsSpinningPromise = resolve;
-      this._loopSymbolsSpinAnimation(this.container1);
-      this._loopSymbolsSpinAnimation(this.container2);
-    });
-  }
-
-  getTopMostContainer() {
-    return this.container1.getBounds().top < this.container2.getBounds().top
-      ? this.container1
-      : this.container2;
-  }
-
-  getBottomMostContainer() {
-    return this.container1.getBounds().bottom >
-      this.container2.getBounds().bottom
-      ? this.container1
-      : this.container2;
+    return this.reelAnimationManager.spinToSymbol(resultSymbol);
   }
 }
