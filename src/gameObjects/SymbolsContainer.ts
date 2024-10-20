@@ -3,8 +3,8 @@ import IndicatorLine from "./IndicatorLine";
 import { SlotMachineReelAnimationPreferences } from "./SlotMachineReel";
 
 export default class SymbolsContainer extends Phaser.GameObjects.Container {
-  static symbolWidth: number = 100;
-  static symbolHeight: number = 100;
+  static symbolWidth: number = 96;
+  static symbolHeight: number = 96;
 
   constructor(
     scene: Phaser.Scene,
@@ -24,19 +24,17 @@ export default class SymbolsContainer extends Phaser.GameObjects.Container {
     scene.add.existing(this);
   }
 
-  animateAlignSymbolToYPosition(symbolName: string, y: number) {
+  animateAlignSymbolToYPosition(symbolName: string, targetY: number) {
     const symbol = this._findSymbol(symbolName);
+    const indexOfSymbol = this.list.indexOf(symbol);
 
-    const offsetFromSymbolToPayline =
-      y - symbol.y + SymbolsContainer.symbolHeight / 2;
-
-    const durationUntilSymbolReachesPayline =
-      Math.abs(offsetFromSymbolToPayline) / this.animationPreferences.speed;
+    const distanceContainerYToSymbol = indexOfSymbol * (SymbolsContainer.symbolHeight + this.spacing);    
+    const duration = 500;
 
     return this.scene.tweens.add({
       targets: this,
-      y: "+=" + offsetFromSymbolToPayline,
-      duration: durationUntilSymbolReachesPayline,
+      y: targetY - distanceContainerYToSymbol,
+      duration,
       ease: "Elastic",
       easeParams: [1.5, 1],
     });
