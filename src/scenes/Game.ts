@@ -35,19 +35,18 @@ export class Game extends Scene {
   }
 
   preload() {
-    this.load.image("leverUp", "assets/Slot Machine/lever-up.png");
-    this.load.image("leverDown", "assets/Slot Machine/lever-down.png");
-    this.load.image("reelBg", "assets/Slot Machine/reel-bg.png");
+    this.load.image("leverUp", "assets/lever-up.png");
+    this.load.image("leverDown", "assets/lever-down.png");
     this.load.image(
       "slotMachineBackground",
-      "assets/Slot Machine/slot-machine.png"
+      "assets/slot-machine.png"
     );
-    this.load.image("slotMachine1", "assets/Slot Machine/slot-machine1.png");
-    this.load.image("slotSymbol1", "assets/Slot Machine/slot-symbol1.png");
-    this.load.image("slotSymbol2", "assets/Slot Machine/slot-symbol2.png");
-    this.load.image("slotSymbol3", "assets/Slot Machine/slot-symbol3.png");
-    this.load.image("slotSymbol4", "assets/Slot Machine/slot-symbol4.png");
-    this.load.image("slotSymbol5", "assets/Slot Machine/slot-symbol5.png");
+    this.load.image("slotMachine1", "assets/slot-machine1.png");
+    this.load.image("slotSymbol1", "assets/slot-symbol1.png");
+    this.load.image("slotSymbol2", "assets/slot-symbol2.png");
+    this.load.image("slotSymbol3", "assets/slot-symbol3.png");
+    this.load.image("slotSymbol4", "assets/slot-symbol4.png");
+    this.load.image("slotSymbol5", "assets/slot-symbol5.png");
   }
 
   create() {
